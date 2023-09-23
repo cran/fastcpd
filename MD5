@@ -1,14 +1,14 @@
-4f5fc57e653dc33925a94336d1333b91 *DESCRIPTION
+ef6f81e94cdfca7106d691de4dc0036b *DESCRIPTION
 a738fd9fb25f522eada471e196ebff76 *NAMESPACE
-cdc5b6de61e882f701f6ba69c6287b50 *NEWS.md
+f2bb666bf738c1c7581aa070870c2ac2 *NEWS.md
 36033dfbd13d39235c58d6e5279d2d3d *R/RcppExports.R
 0a966adfa9633c36704522b8fc369814 *R/catch-routine-registration.R
-8e7021b237fb06309fac10ce20a1380e *R/fastcpd-class.R
-254b8db3258772da358ff17dfda54b7c *R/fastcpd.R
+909572e9ff15ee611be644fde0275aea *R/fastcpd-class.R
+e481659025216ec3a0a1c4869b4bc942 *R/fastcpd.R
 319dbda5db6bc97f7cca5b7ac3367dc0 *README.md
-dc3dc99cda6349ab50913c3d6376bf6b *inst/CITATION
+c524050e654bcdae1fd2006009709d9e *inst/CITATION
 49303db3783b5ab618f28593195d26cd *man/fastcpd-class.Rd
-c7faf3897d0fe98587eeb68e0e624530 *man/fastcpd.Rd
+6baa82203f01d24c5d9c3b707ecf00c0 *man/fastcpd.Rd
 fce7e56aef782e2eeb9c9ece97cef1ce *man/figures/README-linear_regression-1.png
 7b7bf57331a038aa06cbca412c4b12d4 *man/figures/README-linear_regression_with_one_dimensional_covariate-1.png
 42ddce077e7944010b6c33c10117a7ff *man/figures/README-penalized_linear_regression-1.png
@@ -27,4 +27,4 @@ e9be9a60dfcb7079504554069e710ee7 *src/fastcpd.h
 c94fd2dc2948b0a6859342263e9752a4 *tests/testthat/test-cpp.R
 b9076399c1db9ac7ef99e1d49f64e896 *tests/testthat/test-experiments.R
 5d8a594c4eee1b6c829a86665e366d48 *tests/testthat/test-fastcpd-class.R
-6de7a0ae6f42af742ec01f8a46c53c3e *tests/testthat/test-fastcpd.R
+f9508b62122c47698507dd6e63f8c342 *tests/testthat/test-fastcpd.R
