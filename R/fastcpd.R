@@ -1,174 +1,14 @@
-#' fastcpd: A package for finding change points in an efficient way
+#' @title Find change points efficiently
 #'
-#' The fastcpd package provides a function \code{\link{fastcpd}} to find change
-#' points in a data set. The function is based on the paper ``Sequential
-#' Gradient Descent and Quasi-Newton's Method for Change-Point Analysis'' by
-#' Xianyang Zhang and Trisha Dawn.
+#' @description \code{fastcpd} takes in formulas, data, families and extra
+#' parameters and returns a \code{fastcpd} object.
 #'
-#' @section References:
-#'   Zhang X, Dawn T (2023). ``Sequential Gradient Descent and Quasi-Newton's
-#'   Method for Change-Point Analysis.'' In Ruiz, Francisco, Dy, Jennifer,
-#'   van de Meent, Jan-Willem (eds.), _Proceedings of The 26th International
-#'   Conference on Artificial Intelligence and Statistics_, volume 206 series
-#'   Proceedings of Machine Learning Research, 1129-1143.
-#'   <https://proceedings.mlr.press/v206/zhang23b.html>.
-#'
-#' @docType package
-#' @name fastcpd
-#' @useDynLib fastcpd, .registration = TRUE
-#' @importFrom Rcpp evalCpp
-#' @importFrom methods show
-NULL
-#> NULL
-
-
-#' Sequential Gradient Descent and Quasi-Newton's Method for Change-Point
-#' Analysis
-#'
-#' @param formula A formula object specifying the model to be fitted. The
-#'   optional response variable should be on the left hand side of the formula
-#'   while the covariates should be on the right hand side. The intercept term
-#'   should be removed from the formula. The response variable is not
-#'   necessary if the data considered is not of regression type. For example,
-#'   a mean or variance change model does not necessarily have response
-#'   variables. By default an intercept column will be added to the data
-#'   similar to the \code{lm} function in \proglang{R}. Thus it is suggested
-#'   that user should remove the intercept term from the formula by appending
-#'   \code{- 1} to the formula. The default formula is suitable for regression
-#'   data sets with one-dimensional response variable and the rest being
-#'   covariates without intercept. The naming of variables used in the formula
-#'   should be consistent with the column names in the data frame provided in
-#'   \code{data}.
-#' @param data A data frame containing the data to be segmented where each row
-#'   denotes each data point. In one-dimensional response variable regression
-#'   settings, the first column is the response variable while the rest are
-#'   covariates. The response is not necessary in the case of mean change or
-#'   variance change, in which case the formula will need to be adjusted
-#'   accordingly.
-#' @param beta Initial cost value specified in the algorithm in the paper.
-#'   For the proper choice of a value, please refer to the paper. If not
-#'   specified, BIC criterion is used to obtain a proper value, i.e.,
-#'   \code{beta = (p + 1) * log(nrow(data)) / 2}.
-#' @param segment_count Number of segments for initial guess. If not specified,
-#'   the initial guess on the number of segments is 10.
-#' @param trim Trimming for the boundary change points so that a change point
-#'   close to the boundary will not be counted as a change point. This
-#'   parameter also specifies the minimum distance between two change points.
-#'   If.   several change points have mutual distances smaller than
-#'   \code{trim * nrow(data)}, those change points will be merged into one
-#'   single change point. The value of this parameter should be between
-#'   0 and 1.
-#' @param momentum_coef Momentum coefficient to be applied to each update. This
-#'   parameter is used when the loss function is bad-shaped so that
-#'   maintaining a momentum from previous update is desired. Default value is
-#'   0, meaning the algorithm doesn't maintain a momentum by default.
-#' @param k Function on number of epochs in SGD. \code{k} should be a function
-#'   taking only a parameter \code{x} meaning the current number of data
-#'   points considered since last segmentaion. The return value of the
-#'   function should be an integer indicating how many epochs should be
-#'   performed apart from the default update. By default the function returns
-#'   0, meaning no multiple epochs will be used to update the parameters.
-#'   Example usage:
-#'   ```r
-#'     k = function(x) {
-#'       if (x < n / segment_count / 4 * 1) 3
-#'       else if (x < n / segment_count / 4 * 2) 2
-#'       else if (x < n / segment_count / 4 * 3) 1
-#'       else 0
-#'     }
-#'   ```
-#'   This function will perform 3 epochs for the first quarter of the data, 2
-#'   epochs for the second quarter of the data, 1 epoch for the third quarter
-#'   of the data and no multiple epochs for the last quarter of the data.
-#'   Experiments show that performing multiple epochs will significantly
-#'   affect the performance of the algorithm. This parameter is left for the
-#'   users to tune the performance of the algorithm if the result is not
-#'   ideal. Details are discussed in the paper.
-#' @param family Family of the model. Can be \code{"gaussian"},
-#'   \code{"binomial"}, \code{"poisson"}, \code{"lasso"}, \code{"custom"} or
-#'   \code{NULL}. For simplicity, user can also omit this parameter,
-#'   indicating that they will be using their own cost functions. Omitting the
-#'   parameter is the same as specifying the parameter to be \code{"custom"}
-#'   or \code{NULL}, in which case, users must specify the cost function, with
-#'   optional gradient and corresponding Hessian matrix functions.
-#' @param epsilon Epsilon to avoid numerical issues. Only used for the Hessian
-#'   computation in Logistic Regression and Poisson Regression.
-#' @param min_prob Minimum probability to avoid numerical issues. Only used
-#'   for Poisson Regression.
-#' @param winsorise_minval Minimum value for the parameter in Poisson Regression
-#'   to be winsorised.
-#' @param winsorise_maxval Maximum value for the parameter in Poisson Regression
-#'   to be winsorised.
-#' @param p Number of covariates in the model. If not specified, the number of
-#'   covariates will be inferred from the data, i.e.,
-#'   \code{p = ncol(data) - 1}.
-#' @param cost Cost function to be used. This and the following two parameters
-#'   should not be specified at the same time with \code{family}. If not
-#'   specified, the default is the negative log-likelihood for the
-#'   corresponding family. Custom cost functions can be provided in the
-#'   following two formats:
-#'
-#'   - \code{cost = function(data) \{...\}}
-#'   - \code{cost = function(data, theta) \{...\}}
-#'
-#'   In both methods, users should implement the cost value calculation based
-#'   on the data provided, where the data parameter can be considered as a
-#'   segment of the original data frame in the form of a matrix. The first
-#'   method is used when the cost function has an explicit solution, in which
-#'   case the cost function value can be calculated directly from the data.
-#'   The second method is used when the cost function does not have an
-#'   explicit solution, in which case the cost function value can be
-#'   calculated from the data and the estimated parameters. In the case of
-#'   only one \code{data} argument is provided, `fastcpd` performs the
-#'   vanilla PELT algorithm since no parameter updating is performed.
-#' @param cost_gradient Gradient function for the custom cost function.
-#'   Example usage:
-#'   ```r
-#'     cost_gradient = function(data, theta) {
-#'       ...
-#'       return(gradient)
-#'     }
-#'   ```
-#'   The gradient function should take two parameters, the first one being a
-#'   segment of the data in the format of a matrix, the second one being the
-#'   estimated parameters. The gradient function should return the gradient of
-#'   the cost function with respect to the data and parameters.
-#' @param cost_hessian Hessian function for the custom cost function. Similar to
-#'   the gradient function, the Hessian function should take two parameters,
-#'   the first one being a segment of the data in the format of a matrix, the
-#'   second one being the estimated parameters. The Hessian function should
-#'   return the Hessian matrix of the cost function with respect to the data
-#'   and parameters.
-#' @param cp_only If \code{TRUE}, only the change points are returned.
-#'   Otherwise, the cost function values together with the estimated
-#'   parameters for each segment are also returned. By default the value is
-#'   set to be \code{FALSE} so that `plot` can be used to visualize the
-#'   results for a built-in model. If \code{family} is not provided or
-#'   specified as \code{NULL} or \code{"custom"}, \code{cp_only} is set to be
-#'   \code{TRUE} by default. \code{cp_only} has some performance impact on the
-#'   algorithm, since the cost values and estimated parameters for each
-#'   segment need to be calculated and stored. If the users are only
-#'   interested in the change points, setting \code{cp_only} to be \code{TRUE}
-#'   will help with the computational cost.
-#' @param vanilla_percentage How many of the data should be processed through
-#'   vanilla PELT. Range should be between 0 and 1. The `fastcpd`
-#'   algorithm is based on gradient descent and thus a starting estimate can
-#'   be crucial. At the beginning of the algorithm, vanilla PELT can be
-#'   performed to obtain a relatively accurate estimate of the parameters
-#'   despite the small amount of the data being used. If set to be 0, all data
-#'   will be processed through sequential gradient descnet. If set to be 1,
-#'   all data will be processed through vaniall PELT. If the cost function
-#'   have an explicit solution, i.e. does not depend on coefficients like the
-#'   mean change case, this parameter will be set to be 1. If the value is set
-#'   to be between 0 and 1, the first \code{vanilla_percentage * nrow(data)}
-#'   data points will be processed through vanilla PELT and the rest will be
-#'   processed through sequential gradient descent.
-#'
-#' @return A class \code{fastcpd} object.
-#' @export
-#' @md
 #' @examples
 #' \donttest{
+#' if (!requireNamespace("ggplot2", quietly = TRUE)) utils::install.packages(
+#'   "ggplot2", repos = "https://cloud.r-project.org", quiet = TRUE
+#' )
+#'
 #' ### linear regression
 #' library(fastcpd)
 #' set.seed(1)
@@ -205,6 +45,26 @@ NULL
 #'   family = "gaussian"
 #' )
 #' plot(result)
+#' summary(result)
+#'
+#' ### linear regression with noise variance not equal to 1
+#' library(fastcpd)
+#' set.seed(1)
+#' p <- 4
+#' n <- 300
+#' cp <- c(100, 200)
+#' x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
+#' theta_0 <- rbind(c(1, 3.2, -1, 0), c(-1, -0.5, 2.5, -2), c(0.8, -0.3, 1, 1))
+#' y <- c(
+#'   x[1:cp[1], ] %*% theta_0[1, ] + rnorm(cp[1], 0, sd = 3),
+#'   x[(cp[1] + 1):cp[2], ] %*% theta_0[2, ] + rnorm(cp[2] - cp[1], 0, sd = 3),
+#'   x[(cp[2] + 1):n, ] %*% theta_0[3, ] + rnorm(n - cp[2], 0, sd = 3)
+#' )
+#'
+#' result <- fastcpd(
+#'   data = data.frame(y = y, x = x),
+#'   family = "gaussian"
+#' )
 #' summary(result)
 #'
 #' ### logistic regression
@@ -284,6 +144,48 @@ NULL
 #' )
 #' plot(result)
 #' summary(result)
+#'
+#' ### ar(1) model
+#' library(fastcpd)
+#' set.seed(1)
+#' n <- 1000
+#' p <- 1
+#' x <- rep(0, n + 1)
+#' for (i in 1:600) {
+#'   x[i + 1] <- 0.6 * x[i] + rnorm(1)
+#' }
+#' for (i in 601:1000) {
+#'   x[i + 1] <- 0.3 * x[i] + rnorm(1)
+#' }
+#' result <- fastcpd(
+#'   formula = ~ . - 1,
+#'   data = data.frame(x = x),
+#'   p = 1,
+#'   family = "ar"
+#' )
+#' summary(result)
+#' plot(result)
+#'
+#' ### ar(3) model with innovation standard deviation 3
+#' library(fastcpd)
+#' set.seed(1)
+#' n <- 1000
+#' p <- 1
+#' x <- rep(0, n + 3)
+#' for (i in 1:600) {
+#'   x[i + 3] <- 0.6 * x[i + 2] - 0.2 * x[i + 1] + 0.1 * x[i] + rnorm(1, 0, 3)
+#' }
+#' for (i in 601:1000) {
+#'   x[i + 1] <- 0.3 * x[i + 2] + 0.4 * x[i + 1] + 0.2 * x[i] + rnorm(1, 0, 3)
+#' }
+#' result <- fastcpd(
+#'   formula = ~ . - 1,
+#'   data = data.frame(x = x),
+#'   p = 3,
+#'   family = "ar"
+#' )
+#' summary(result)
+#' plot(result)
 #'
 #' ### custom logistic regression
 #' library(fastcpd)
@@ -603,25 +505,184 @@ NULL
 #' )
 #' summary(huber_regression_result)
 #' }
+#'
+#' @md
+#' @section References:
+#'   Zhang X, Dawn T (2023). ``Sequential Gradient Descent and Quasi-Newton's
+#'   Method for Change-Point Analysis.'' In Ruiz, Francisco, Dy, Jennifer,
+#'   van de Meent, Jan-Willem (eds.), _Proceedings of The 26th International
+#'   Conference on Artificial Intelligence and Statistics_, volume 206 series
+#'   Proceedings of Machine Learning Research, 1129-1143.
+#'   <https://proceedings.mlr.press/v206/zhang23b.html>.
+#'
+#' @param formula A formula object specifying the model to be fitted. The
+#'   optional response variable should be on the left hand side of the formula
+#'   while the covariates should be on the right hand side. The intercept term
+#'   should be removed from the formula. The response variable is not
+#'   necessary if the data considered is not of regression type. For example,
+#'   a mean or variance change model does not necessarily have response
+#'   variables. By default an intercept column will be added to the data
+#'   similar to the \code{lm} function in \proglang{R}. Thus it is suggested
+#'   that user should remove the intercept term from the formula by appending
+#'   \code{- 1} to the formula. The default formula is suitable for regression
+#'   data sets with one-dimensional response variable and the rest being
+#'   covariates without intercept. The naming of variables used in the formula
+#'   should be consistent with the column names in the data frame provided in
+#'   \code{data}.
+#' @param data A data frame containing the data to be segmented where each row
+#'   denotes each data point. In one-dimensional response variable regression
+#'   settings, the first column is the response variable while the rest are
+#'   covariates. The response is not necessary in the case of mean change or
+#'   variance change, in which case the formula will need to be adjusted
+#'   accordingly.
+#' @param beta Initial cost value specified in the algorithm in the paper.
+#'   For the proper choice of a value, please refer to the paper. If not
+#'   specified, BIC criterion is used to obtain a proper value, i.e.,
+#'   \code{beta = (p + 1) * log(nrow(data)) / 2}.
+#' @param segment_count Number of segments for initial guess. If not specified,
+#'   the initial guess on the number of segments is 10.
+#' @param trim Trimming for the boundary change points so that a change point
+#'   close to the boundary will not be counted as a change point. This
+#'   parameter also specifies the minimum distance between two change points.
+#'   If.   several change points have mutual distances smaller than
+#'   \code{trim * nrow(data)}, those change points will be merged into one
+#'   single change point. The value of this parameter should be between
+#'   0 and 1.
+#' @param momentum_coef Momentum coefficient to be applied to each update. This
+#'   parameter is used when the loss function is bad-shaped so that
+#'   maintaining a momentum from previous update is desired. Default value is
+#'   0, meaning the algorithm doesn't maintain a momentum by default.
+#' @param k Function on number of epochs in SGD. \code{k} should be a function
+#'   taking only a parameter \code{x} meaning the current number of data
+#'   points considered since last segmentaion. The return value of the
+#'   function should be an integer indicating how many epochs should be
+#'   performed apart from the default update. By default the function returns
+#'   0, meaning no multiple epochs will be used to update the parameters.
+#'   Example usage:
+#'   ```r
+#'     k = function(x) {
+#'       if (x < n / segment_count / 4 * 1) 3
+#'       else if (x < n / segment_count / 4 * 2) 2
+#'       else if (x < n / segment_count / 4 * 3) 1
+#'       else 0
+#'     }
+#'   ```
+#'   This function will perform 3 epochs for the first quarter of the data, 2
+#'   epochs for the second quarter of the data, 1 epoch for the third quarter
+#'   of the data and no multiple epochs for the last quarter of the data.
+#'   Experiments show that performing multiple epochs will significantly
+#'   affect the performance of the algorithm. This parameter is left for the
+#'   users to tune the performance of the algorithm if the result is not
+#'   ideal. Details are discussed in the paper.
+#' @param family Family of the model. Can be \code{"gaussian"},
+#'   \code{"binomial"}, \code{"poisson"}, \code{"lasso"}, \code{"custom"} or
+#'   \code{NULL}. For simplicity, user can also omit this parameter,
+#'   indicating that they will be using their own cost functions. Omitting the
+#'   parameter is the same as specifying the parameter to be \code{"custom"}
+#'   or \code{NULL}, in which case, users must specify the cost function, with
+#'   optional gradient and corresponding Hessian matrix functions.
+#' @param epsilon Epsilon to avoid numerical issues. Only used for the Hessian
+#'   computation in Logistic Regression and Poisson Regression.
+#' @param min_prob Minimum probability to avoid numerical issues. Only used
+#'   for Poisson Regression.
+#' @param winsorise_minval Minimum value for the parameter in Poisson Regression
+#'   to be winsorised.
+#' @param winsorise_maxval Maximum value for the parameter in Poisson Regression
+#'   to be winsorised.
+#' @param p Number of covariates in the model. If not specified, the number of
+#'   covariates will be inferred from the data, i.e.,
+#'   \code{p = ncol(data) - 1}.
+#' @param cost Cost function to be used. This and the following two parameters
+#'   should not be specified at the same time with \code{family}. If not
+#'   specified, the default is the negative log-likelihood for the
+#'   corresponding family. Custom cost functions can be provided in the
+#'   following two formats:
+#'
+#'   - \code{cost = function(data) \{...\}}
+#'   - \code{cost = function(data, theta) \{...\}}
+#'
+#'   In both methods, users should implement the cost value calculation based
+#'   on the data provided, where the data parameter can be considered as a
+#'   segment of the original data frame in the form of a matrix. The first
+#'   method is used when the cost function has an explicit solution, in which
+#'   case the cost function value can be calculated directly from the data.
+#'   The second method is used when the cost function does not have an
+#'   explicit solution, in which case the cost function value can be
+#'   calculated from the data and the estimated parameters. In the case of
+#'   only one \code{data} argument is provided, `fastcpd` performs the
+#'   vanilla PELT algorithm since no parameter updating is performed.
+#' @param cost_gradient Gradient function for the custom cost function.
+#'   Example usage:
+#'   ```r
+#'     cost_gradient = function(data, theta) {
+#'       ...
+#'       return(gradient)
+#'     }
+#'   ```
+#'   The gradient function should take two parameters, the first one being a
+#'   segment of the data in the format of a matrix, the second one being the
+#'   estimated parameters. The gradient function should return the gradient of
+#'   the cost function with respect to the data and parameters.
+#' @param cost_hessian Hessian function for the custom cost function. Similar to
+#'   the gradient function, the Hessian function should take two parameters,
+#'   the first one being a segment of the data in the format of a matrix, the
+#'   second one being the estimated parameters. The Hessian function should
+#'   return the Hessian matrix of the cost function with respect to the data
+#'   and parameters.
+#' @param cp_only If \code{TRUE}, only the change points are returned.
+#'   Otherwise, the cost function values together with the estimated
+#'   parameters for each segment are also returned. By default the value is
+#'   set to be \code{FALSE} so that `plot` can be used to visualize the
+#'   results for a built-in model. \code{cp_only} has some performance impact
+#'   on the algorithm, since the cost values and estimated parameters for each
+#'   segment need to be calculated and stored. If the users are only
+#'   interested in the change points, setting \code{cp_only} to be \code{TRUE}
+#'   will help with the computational cost.
+#' @param vanilla_percentage How many of the data should be processed through
+#'   vanilla PELT. Range should be between 0 and 1. The `fastcpd`
+#'   algorithm is based on gradient descent and thus a starting estimate can
+#'   be crucial. At the beginning of the algorithm, vanilla PELT can be
+#'   performed to obtain a relatively accurate estimate of the parameters
+#'   despite the small amount of the data being used. If set to be 0, all data
+#'   will be processed through sequential gradient descnet. If set to be 1,
+#'   all data will be processed through vaniall PELT. If the cost function
+#'   have an explicit solution, i.e. does not depend on coefficients like the
+#'   mean change case, this parameter will be set to be 1. If the value is set
+#'   to be between 0 and 1, the first \code{vanilla_percentage * nrow(data)}
+#'   data points will be processed through vanilla PELT and the rest will be
+#'   processed through sequential gradient descent.
+#' @param warm_start If \code{TRUE}, the algorithm will use the estimated
+#'   parameters from the previous segment as the initial value for the
+#'   current segment. This parameter is only used for family \code{"gaussian"},
+#'   \code{"binomial"} and \code{"poisson"}.
+#'
+#' @return A class \code{fastcpd} object.
+#'
+#' @export
+#' @importFrom Rcpp evalCpp
+#' @importFrom methods show
+#' @useDynLib fastcpd, .registration = TRUE
 fastcpd <- function(
-    formula = y ~ . - 1,
-    data,
-    beta = NULL,
-    segment_count = 10,
-    trim = 0.025,
-    momentum_coef = 0,
-    k = function(x) 0,
-    family = NULL,
-    epsilon = 1e-10,
-    min_prob = 10^10,
-    winsorise_minval = -20,
-    winsorise_maxval = 20,
-    p = NULL,
-    cost = negative_log_likelihood,
-    cost_gradient = cost_update_gradient,
-    cost_hessian = cost_update_hessian,
-    cp_only = FALSE,
-    vanilla_percentage = 0) {
+  formula = y ~ . - 1,
+  data,
+  beta = NULL,
+  segment_count = 10,
+  trim = 0.025,
+  momentum_coef = 0,
+  k = function(x) 0,
+  family = NULL,
+  epsilon = 1e-10,
+  min_prob = 10^10,
+  winsorise_minval = -20,
+  winsorise_maxval = 20,
+  p = ncol(data) - 1,
+  cost = NULL,
+  cost_gradient = NULL,
+  cost_hessian = NULL,
+  cp_only = FALSE,
+  vanilla_percentage = 0,
+  warm_start = FALSE
+) {
   # The following code is adapted from the `lm` function from base R.
   match_formula <- match.call(expand.dots = FALSE)
   matched_formula <- match(c("formula", "data"), names(match_formula), 0L)
@@ -630,49 +691,160 @@ fastcpd <- function(
   match_formula[[1L]] <- quote(stats::model.frame)
   match_formula <- eval(match_formula, parent.frame())
   mt <- attr(match_formula, "terms")
-  y <- stats::model.response(match_formula, "numeric")
+  y <- stats::model.response(match_formula, "any")
   x <- stats::model.matrix(mt, match_formula)
   data <- cbind(y, x)
 
-  if (is.null(family) || length(formals(cost)) == 1) {
+  # Vanilla is not a `fastcpd` family and can not be set manually by the user.
+  # `vanilla` is used to distinguish the cost function parameters in the
+  # implementation.
+  allowed_family <- c(
+    "gaussian", "binomial", "poisson", "lasso", "custom", "ar", "var"
+  )
+
+  fastcpd_family <- NULL
+  fastcpd_data <- NULL
+
+  # If `family` is provided and not in the allowed family list, throw an error.
+  if (!(is.null(family) || family %in% allowed_family)) {
+    error_message <- r"[
+The family should be one of "gaussian", "binomial", "poisson", "lasso", "ar",
+"var", "custom" or `NULL` while the provided family is {family}.]"
+    stop(gsub("{family}", family, error_message, fixed = TRUE))
+  }
+
+  # If the family is not provided, or a custom cost function is provided, the
+  # family will be set to be "custom". No need to check the gradient or
+  # Hessian since providing a custom gradient or Hessian requires a custom
+  # cost function.
+  if (is.null(family) || !is.null(cost)) {
     family <- "custom"
   }
 
-  if (family == "custom") {
-    cp_only <- TRUE
-  }
-
-  if (is.null(p)) {
-    p <- ncol(data) - 1
-  }
-
-  if (is.null(beta)) {
-    beta <- (p + 1) * log(nrow(data)) / 2
-  }
-
-  if (length(formals(cost)) == 1) {
+  # If a cost function provided has an explicit solution, i.e. does not depend
+  # on the parameters, e.g., mean change, then the `family` is set to be
+  # `"vanilla"` and the percentage of vanilla PELT is set to be 1.
+  if (!is.null(cost) && length(formals(cost)) == 1) {
+    family <- "custom"
+    fastcpd_family <- "vanilla"
     vanilla_percentage <- 1
   }
 
-  if (family == "lasso") {
-    # TODO(doccstat): Due to the excessive calls to `glmnet` between R and C++,
-    # it is better to use the R implementation of `fastcpd` for lasso.
-    result <- fastcpd_impl_r(
-      data, beta, segment_count, trim, momentum_coef, k, family, epsilon,
-      min_prob, winsorise_minval, winsorise_maxval, p, cost, cost_gradient,
-      cost_hessian, cp_only, vanilla_percentage
-    )
-  } else {
-    result <- fastcpd_impl(
-      data, beta, segment_count, trim, momentum_coef, k, family, epsilon,
-      min_prob, winsorise_minval, winsorise_maxval, p, cost, cost_gradient,
-      cost_hessian, cp_only, vanilla_percentage
-    )
+  if (family == "ar") {
+    # Check the validity of the parameters for AR(p) model.
+    if (ncol(data) != 1) {
+      stop("The data should be a univariate time series.")
+    }
+    if (p == 0) {
+      stop("Please specify the order of the AR model as the parameter `p`.")
+    }
+    fastcpd_family <- "gaussian"
+    y <- data[p + seq_len(nrow(data) - p), ]
+    x <- matrix(NA, nrow(data) - p, p)
+    for (p_i in seq_len(p)) {
+      x[, p_i] <- data[(p - p_i) + seq_len(nrow(data) - p), ]
+    }
+    fastcpd_data <- cbind(y, x)
   }
 
-  result$thetas <- data.frame(result$thetas)
-  if (ncol(result$thetas) > 0) {
-    names(result$thetas) <- paste0("segment ", seq_len(ncol(result$thetas)))
+  if (family == "var") {
+    fastcpd_family <- "vanilla"
+    vanilla_percentage <- 1
+    y <- data[p + seq_len(nrow(data) - p), ]
+    x <- matrix(NA, nrow(data) - p, p * ncol(data))
+    for (p_i in seq_len(p)) {
+      x[, (p_i - 1) * ncol(data) + seq_len(ncol(data))] <-
+        data[(p - p_i) + seq_len(nrow(data) - p), ]
+    }
+    fastcpd_data <- cbind(y, x)
+    cost <- function(data) {
+      x <- data[, (ncol(data) - p + 1):ncol(data)]
+      y <- data[, 1:(ncol(data) - p)]
+
+      if (nrow(data) <= p + 1) {
+        x_t_x <- diag(p)
+      } else {
+        x_t_x <- crossprod(x)
+      }
+
+      # TODO(doccstat): Verify the correctness of the cost function for VAR(p).
+      norm(y - x %*% solve(x_t_x, t(x)) %*% y, type = "F")^2 / 2
+    }
+  }
+
+  if (is.null(fastcpd_family)) {
+    fastcpd_family <- family
+  }
+
+  if (is.null(fastcpd_data)) {
+    fastcpd_data <- data
+  }
+
+  # Use the `beta` value obtained from BIC. For linear regression models,
+  # an estimate of the variance is needed in the cost function. The variance
+  # estimation is only for "gaussian" family with no `beta` provided.
+  if (is.null(beta)) {
+    beta <- (p + 1) * log(nrow(fastcpd_data)) / 2
+
+    # Only estimate the variance for Gaussian family when `beta` is null.
+    # TODO(doccstat): Variance estimation for VAR(p).
+    if (fastcpd_family == "gaussian") {
+      # Estimate the variance for each block and then take the average.
+      n <- nrow(fastcpd_data)
+      block_size <- 5
+      variance_estimation <- rep(NA, n - block_size)
+      for (i in 1:(n - block_size)) {
+        block_index <- seq_len(block_size) + i - 1
+        block_index_lagged <- seq_len(block_size) + i
+
+        y_block <- y[block_index]
+        x_block <- x[block_index, , drop = FALSE]
+
+        y_block_lagged <- y[block_index_lagged]
+        x_block_lagged <- x[block_index_lagged, , drop = FALSE]
+
+        x_t_x <- crossprod(x_block)
+        x_t_x_lagged <- crossprod(x_block_lagged)
+
+        block_slope <- solve(crossprod(x_block), crossprod(x_block, y_block))
+        block_lagged_slope <- solve(
+          crossprod(x_block_lagged), crossprod(x_block_lagged, y_block_lagged)
+        )
+        x_t_x_inv <- solve(x_t_x)
+        x_t_x_inv_lagged <- solve(x_t_x_lagged)
+        inv_product <- x_t_x_inv %*% x_t_x_inv_lagged
+        cross_term_x <- crossprod(
+          x_block[-1, , drop = FALSE],
+          x_block_lagged[-block_size, , drop = FALSE]
+        )
+        cross_term <- inv_product %*% cross_term_x
+        delta_numerator <- crossprod(block_slope - block_lagged_slope)
+        delta_denominator <-
+          sum(diag(x_t_x_inv + x_t_x_inv_lagged - 2 * cross_term))
+        variance_estimation[i] <- delta_numerator / delta_denominator
+      }
+
+      beta <- beta * mean(variance_estimation)
+    }
+  }
+
+  result <- fastcpd_impl(
+    fastcpd_data, beta, segment_count, trim, momentum_coef, k, fastcpd_family,
+    epsilon, min_prob, winsorise_minval, winsorise_maxval, p,
+    cost, cost_gradient, cost_hessian, cp_only, vanilla_percentage, warm_start
+  )
+
+  cp_set <- c(result$cp_set)
+
+  if (family %in% c("ar", "var")) {
+    cp_set <- cp_set + p
+  }
+
+  if (fastcpd_family == "vanilla") {
+    thetas <- data.frame(matrix(NA, 0, 0))
+  } else {
+    thetas <- data.frame(result$thetas)
+    names(thetas) <- paste0("segment ", seq_len(ncol(thetas)))
   }
 
   if (is.null(result$cost_values)) {
@@ -683,161 +855,21 @@ fastcpd <- function(
     result$residual <- numeric(0)
   }
 
+  residuals <- c(result$residual)
+
+  if (family == "ar") {
+    residuals <- c(rep(NA, p), residuals)
+  }
+
   methods::new(
     Class = "fastcpd",
     call = match.call(),
     data = data.frame(data),
     family = family,
-    cp_set = c(result$cp_set),
-    cost_values = c(result$cost_values),
-    residuals = c(result$residual),
-    thetas = result$thetas,
-    cp_only = cp_only
-  )
-}
-
-fastcpd_impl_r <- function(
-    data, beta, segment_count, trim, momentum_coef, k, family, epsilon,
-    min_prob, winsorise_minval, winsorise_maxval, p, cost, cost_gradient,
-    cost_hessian, cp_only, vanilla_percentage) {
-  # Set up the initial values.
-  n <- nrow(data)
-  lambda <- 0
-
-  # After t = 1, the r_t_set R_t contains 0 and 1.
-  r_t_set <- c(0, 1)
-  # C(0)=NULL, C(1)={0}
-  cp_set <- append(list(NULL), rep(list(0), n))
-  # Objective function: F(0) = -beta
-  f_t <- c(-beta, rep(0, n))
-
-  fastcpd_parameters <- init_fastcpd_parameters(
-    data, p, family, segment_count, cost, winsorise_minval, winsorise_maxval,
-    epsilon, vanilla_percentage, beta
-  )
-
-  for (t in 2:n) {
-    r_t_count <- length(r_t_set)
-
-    # number of cost values is the same as number of elemnts in R_t
-    cval <- rep(0, r_t_count)
-
-    # for tau in R_t\{t-1}
-    for (i in 1:(r_t_count - 1)) {
-      tau <- r_t_set[i]
-      if (family == "lasso") {
-        # Mean of `err_sd` only works if error sd is unchanged.
-        lambda <- mean(fastcpd_parameters$err_sd) * sqrt(2 * log(p) / (t - tau))
-      }
-
-      data_segment <- data[(tau + 1):t, , drop = FALSE]
-      if (vanilla_percentage == 1 || t <= vanilla_percentage * n) {
-        cost_optim_result <- cost_optim(family, p, data_segment, cost, 0, TRUE)
-        cval[i] <- cost_optim_result$value
-        if (vanilla_percentage < 1 && t == vanilla_percentage * n) {
-          fastcpd_parameters$theta_hat[, i] <- cost_optim_result$par
-          fastcpd_parameters$theta_sum[, i] <-
-            fastcpd_parameters$theta_sum[, i] + cost_optim_result$par
-        }
-      } else {
-        fastcpd_parameters <- update_fastcpd_parameters(
-          fastcpd_parameters, data, t, i, k, tau, lambda, family,
-          cost_gradient, cost_hessian, r_t_set, p,
-          momentum_coef, min_prob, winsorise_minval, winsorise_maxval, epsilon
-        )
-
-        theta <- fastcpd_parameters$theta_sum[, i] / (t - tau)
-        if (family == "poisson" && t - tau >= p) {
-          theta <- DescTools::Winsorize(
-            x = theta, minval = winsorise_minval, maxval = winsorise_maxval
-          )
-        }
-
-        if (
-          (family %in% c("gaussian", "binomial", "poisson") && t - tau >= p) ||
-            (family == "lasso" && t - tau >= 3)
-        ) {
-          cval[i] <- cost(data_segment, theta, family, lambda)$value
-        } else if (family == "custom") {
-          # if (warm_start && t - tau >= 50) {
-          #   cost_result <- cost(data_segment, start = start[, tau + 1])
-          #   start[, tau + 1] <- cost_result$par
-          #   cval[i] <- cost_result$value
-          # } else {
-          cval[i] <- cost(data_segment, theta)
-          # }
-        }
-      }
-    }
-    fastcpd_parameters <- append_fastcpd_parameters(
-      fastcpd_parameters, vanilla_percentage, data, t, family,
-      winsorise_minval, winsorise_maxval, p, epsilon
-    )
-
-    # Step 3
-    cval[r_t_count] <- 0
-    # `beta` adjustment seems to work but there might be better choices.
-    obj <- cval + f_t[r_t_set + 1] + beta
-    min_obj <- min(obj)
-    tau_star <- r_t_set[which(obj == min_obj)[1]]
-
-    # Step 4
-    cp_set[[t + 1]] <- c(cp_set[[tau_star + 1]], tau_star)
-
-    # Step 5
-    pruned_left <- (cval + f_t[r_t_set + 1]) <= min_obj
-    r_t_set <- c(r_t_set[pruned_left], t)
-
-    if (vanilla_percentage != 1) {
-      fastcpd_parameters$theta_hat <-
-        fastcpd_parameters$theta_hat[, pruned_left, drop = FALSE]
-      fastcpd_parameters$theta_sum <-
-        fastcpd_parameters$theta_sum[, pruned_left, drop = FALSE]
-      fastcpd_parameters$hessian <-
-        fastcpd_parameters$hessian[, , pruned_left, drop = FALSE]
-    }
-
-    # Objective function F(t).
-    f_t[t + 1] <- min_obj
-  }
-
-  # Remove change-points close to the boundaries
-  cp_set <- cp_set[[n + 1]]
-  cp_set <- cp_set[(cp_set >= trim * n) & (cp_set <= (1 - trim) * n)]
-  cp_set <- sort(unique(c(0, cp_set)))
-
-  cp_set_too_close <- which((diff(cp_set) < trim * n) == TRUE)
-  if (length(cp_set_too_close) > 0) {
-    cp_set <- floor(
-      (cp_set[-(cp_set_too_close + 1)] + cp_set[-cp_set_too_close]) / 2
-    )
-  }
-  cp_set <- cp_set[cp_set > 0]
-
-  residual <- numeric(0)
-  if (cp_only) {
-    cost_values <- numeric(0)
-    thetas <- matrix(NA, nrow = 0, ncol = 0)
-  } else {
-    cp_loc <- unique(c(0, cp_set, n))
-    cost_values <- rep(0, length(cp_loc) - 1)
-    thetas <- matrix(NA, nrow = p, ncol = length(cp_loc) - 1)
-    for (i in 1:(length(cp_loc) - 1)) {
-      data_segment <- data[(cp_loc[i] + 1):cp_loc[i + 1], , drop = FALSE]
-      cost_result <- cost_optim(family, p, data_segment, cost, lambda, FALSE)
-      residual <- c(residual, cost_result$residuals)
-      cost_values[i] <- cost_result$value
-      thetas[, i] <- cost_result$par
-    }
-  }
-  thetas <- data.frame(thetas)
-  if (ncol(thetas) > 0) {
-    names(thetas) <- paste0("segment ", seq_len(ncol(thetas)))
-  }
-  list(
     cp_set = cp_set,
-    cost_values = cost_values,
-    residual = residual,
-    thetas = thetas
+    cost_values = c(result$cost_values),
+    residuals = residuals,
+    thetas = thetas,
+    cp_only = cp_only
   )
 }

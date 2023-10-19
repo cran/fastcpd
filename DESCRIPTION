@@ -1,7 +1,7 @@
 Type: Package
 Package: fastcpd
 Title: Fast Change Point Detection via Sequential Gradient Descent
-Version: 0.7.2
+Version: 0.9.0
 Authors@R: c(
     person("Xingchi", "Li", , "anthony.li@stat.tamu.edu", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0009-0006-2493-0853")),
@@ -22,18 +22,18 @@ License: GPL (>= 3)
 URL: https://fastcpd.xingchi.li, https://github.com/doccstat/fastcpd
 BugReports: https://github.com/doccstat/fastcpd/issues
 Imports: DescTools, fastglm, glmnet, Matrix, methods, Rcpp (>= 0.11.0),
-        stats
-Suggests: abind, ggplot2, knitr, mvtnorm, rmarkdown, testthat (>=
-        3.0.0), xml2
+        stats, utils
+Suggests: abind, forecast, ggplot2, knitr, mockthat, mvtnorm,
+        rmarkdown, testthat (>= 3.0.0), xml2
 LinkingTo: Rcpp, RcppArmadillo, testthat
 Config/testthat/edition: 3
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 NeedsCompilation: yes
-Packaged: 2023-09-22 06:57:41 UTC; codespace
+Packaged: 2023-10-18 22:16:15 UTC; doccstat
 Author: Xingchi Li [aut, cre, cph] (<https://orcid.org/0009-0006-2493-0853>),
   Xianyang Zhang [aut, cph],
   Trisha Dawn [aut, cph]
 Maintainer: Xingchi Li <anthony.li@stat.tamu.edu>
 Repository: CRAN
-Date/Publication: 2023-09-23 23:00:07 UTC
+Date/Publication: 2023-10-19 07:00:13 UTC

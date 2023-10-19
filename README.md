@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# fastcpd
+# fastcpd <a href="https://fastcpd.xingchi.li"><img src="man/figures/logo.svg" align="right" height="138" /></a>
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version-last-release/fastcpd)](https://cran.r-project.org/package=fastcpd)
@@ -35,8 +35,17 @@ To learn more behind the algorithms:
 install.packages("fastcpd")
 ```
 
+<details close>
+<summary>
+Development version
+</summary>
+
 ``` r
-# Install the development version using either of the following commands:
+# Development version from r-universe with CRAN version as a fallback
+install.packages(
+  "fastcpd",
+  repos = c("https://doccstat.r-universe.dev", "https://cloud.r-project.org")
+)
 
 ## install.packages("pak")
 pak::pak("doccstat/fastcpd")
@@ -45,30 +54,31 @@ pak::pak("doccstat/fastcpd")
 devtools::install_github("doccstat/fastcpd")
 ```
 
-### FAQ
-
+</details>
 <details close>
 <summary>
-I countered problems related to gfortran on mac!
+With mamba or conda (available soon)
 </summary>
 
-The package should be able to install on mac without any problems if all
-the dependencies are installed. However, if you encountered problems
-related to gfortran, it might be because `RcppArmadillo` is not
-installed previously. Try this [stackoverflow
-solution](https://stackoverflow.com/a/72997915) if you have trouble
-installing `RcppArmadillo`.
+``` bash
+# conda-forge is a fork from CRAN and may not be up-to-date
+
+# Use mamba
+mamba install r-fastcpd
+# Use conda
+conda install -c conda-forge r-fastcpd
+```
 
 </details>
 
-### Dependency
+### FAQ
 
 <details close>
 <summary>
 Package dependencies
 </summary>
 
-`library(fastcpd)` depends on the following packages:
+`fastcpd` depends on the following packages:
 
 - [Rcpp](https://github.com/RcppCore/Rcpp), for C++ source code
   compilation.
@@ -99,6 +109,27 @@ pak::pkg_sysreqs("doccstat/fastcpd")
 ```
 
 </details>
+<details close>
+<summary>
+I countered problems related to gfortran on Mac OSX or Linux!
+</summary>
+
+The package should be able to install on Mac and any Linux distribution
+without any problems if all the dependencies are installed. However, if
+you encountered problems related to gfortran, it might be because
+`RcppArmadillo` is not installed previously. Try [Mac OSX stackoverflow
+solution](https://stackoverflow.com/a/72997915) or [Linux stackover
+solution](https://stackoverflow.com/a/15540919) if you have trouble
+installing `RcppArmadillo`.
+
+</details>
+
+## Cheatsheet
+
+[![fastcpd
+cheatsheet](man/figures/cheatsheets.png)](https://github.com/doccstat/fastcpd/blob/main/man/figures/cheatsheets.pdf)
+
+<!-- TODO(doccstat): Leave only one example. -->
 
 ## Examples
 
@@ -107,7 +138,7 @@ pak::pkg_sysreqs("doccstat/fastcpd")
 <!-- This example section is a direct copy from `fastcpd` documentation -->
 <details open>
 <summary>
-Example usage
+Click to fold
 </summary>
 
 ### linear regression
@@ -192,6 +223,46 @@ summary(result)
 #> Parameters:
 #>   segment 1  segment 2 segment 3
 #> 1 0.9520606 -0.8054074 0.3692224
+```
+
+### linear regression with noise variance not equal to 1
+
+``` r
+library(fastcpd)
+set.seed(1)
+p <- 4
+n <- 300
+cp <- c(100, 200)
+x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
+theta_0 <- rbind(c(1, 3.2, -1, 0), c(-1, -0.5, 2.5, -2), c(0.8, -0.3, 1, 1))
+y <- c(
+  x[1:cp[1], ] %*% theta_0[1, ] + rnorm(cp[1], 0, sd = 3),
+  x[(cp[1] + 1):cp[2], ] %*% theta_0[2, ] + rnorm(cp[2] - cp[1], 0, sd = 3),
+  x[(cp[2] + 1):n, ] %*% theta_0[3, ] + rnorm(n - cp[2], 0, sd = 3)
+)
+
+result <- fastcpd(
+  data = data.frame(y = y, x = x),
+  family = "gaussian"
+)
+summary(result)
+#> 
+#> Call:
+#> fastcpd(data = data.frame(y = y, x = x), family = "gaussian")
+#> 
+#> Change points:
+#> 100 201 
+#> 
+#> Cost values:
+#> 499.5254 328.5244 459.3819 
+#> 
+#> Parameters:
+#>    segment 1  segment 2  segment 3
+#> 1  0.7054739 -0.5373328 0.23439463
+#> 2  0.8005173 -0.8915565 0.87884516
+#> 3  3.6097492 -0.5539604 0.03698789
+#> 4 -1.3438206  2.2831450 1.01253653
+#> 5  0.1352143 -2.0567371 1.28948015
 ```
 
 ### logistic regression
@@ -342,65 +413,147 @@ summary(result)
 #>     family = "lasso")
 #> 
 #> Change points:
-#> 300 701 1000 
+#> 300 700 1000 
 #> 
 #> Cost values:
-#> 181.7214 237.5852 164.4635 279.2901 
+#> 202.6103 254.6904 183.5909 302.4998 
 #> 
 #> Parameters:
 #> 50 x 4 sparse Matrix of class "dgCMatrix"
-#>       segment 1  segment 2 segment 3   segment 4
-#>  [1,] -2.950291  0.3790728  4.108208 -0.04955231
-#>  [2,] -2.896748 -0.3979970  3.952567  3.15522854
-#>  [3,] -2.875025 -0.2419562  2.634441  2.82389558
-#>  [4,] -1.982441  0.5145819  3.370837 -0.58643066
-#>  [5,] -3.116640 -0.5223081  2.140809 -3.42307221
-#>  [6,] -1.908975  0.4789674  4.852307  .         
-#>  [7,]  .         .          .         .         
-#>  [8,]  .         .          .         .         
-#>  [9,]  .         .          .         .         
-#> [10,]  .         .          .         .         
-#> [11,]  .         .          .         .         
-#> [12,]  .         .          .         .         
-#> [13,]  .         .          .         .         
-#> [14,]  .         .          .         .         
-#> [15,]  .         .          .         .         
-#> [16,]  .         .          .         .         
-#> [17,]  .         .          .         .         
-#> [18,]  .         .          .         .         
-#> [19,]  .         .          .         .         
-#> [20,]  .         .          .         .         
-#> [21,]  .         .          .         .         
-#> [22,]  .         .          .         .         
-#> [23,]  .         .          .         .         
-#> [24,]  .         .          .         .         
-#> [25,]  .         .          .         .         
-#> [26,]  .         .          .         .         
-#> [27,]  .         .          .         .         
-#> [28,]  .         .          .         .         
-#> [29,]  .         .          .         .         
-#> [30,]  .         .          .         .         
-#> [31,]  .         .          .         .         
-#> [32,]  .         .          .         .         
-#> [33,]  .         .          .         .         
-#> [34,]  .         .          .         .         
-#> [35,]  .         .          .         .         
-#> [36,]  .         .          .         .         
-#> [37,]  .         .          .         .         
-#> [38,]  .         .          .         .         
-#> [39,]  .         .          .         .         
-#> [40,]  .         .          .         .         
-#> [41,]  .         .          .         .         
-#> [42,]  .         .          .         .         
-#> [43,]  .         .          .         .         
-#> [44,]  .         .          .         .         
-#> [45,]  .         .          .         .         
-#> [46,]  .         .          .         .         
-#> [47,]  .         .          .         .         
-#> [48,]  .         .          .         .         
-#> [49,]  .         .          .         .         
+#>       segment 1  segment 2 segment 3  segment 4
+#>  [1,] -2.892654  0.3344843  4.046784  .        
+#>  [2,] -2.831352 -0.3687367  3.907948  3.1109044
+#>  [3,] -2.817023 -0.1990682  2.574074  2.7732194
+#>  [4,] -1.926208  0.4740742  3.322680 -0.5366242
+#>  [5,] -3.066517 -0.4659526  2.092768 -3.3781507
+#>  [6,] -1.842233  0.4168482  4.798087  .        
+#>  [7,]  .         .          .         .        
+#>  [8,]  .         .          .         .        
+#>  [9,]  .         .          .         .        
+#> [10,]  .         .          .         .        
+#> [11,]  .         .          .         .        
+#> [12,]  .         .          .         .        
+#> [13,]  .         .          .         .        
+#> [14,]  .         .          .         .        
+#> [15,]  .         .          .         .        
+#> [16,]  .         .          .         .        
+#> [17,]  .         .          .         .        
+#> [18,]  .         .          .         .        
+#> [19,]  .         .          .         .        
+#> [20,]  .         .          .         .        
+#> [21,]  .         .          .         .        
+#> [22,]  .         .          .         .        
+#> [23,]  .         .          .         .        
+#> [24,]  .         .          .         .        
+#> [25,]  .         .          .         .        
+#> [26,]  .         .          .         .        
+#> [27,]  .         .          .         .        
+#> [28,]  .         .          .         .        
+#> [29,]  .         .          .         .        
+#> [30,]  .         .          .         .        
+#> [31,]  .         .          .         .        
+#> [32,]  .         .          .         .        
+#> [33,]  .         .          .         .        
+#> [34,]  .         .          .         .        
+#> [35,]  .         .          .         .        
+#> [36,]  .         .          .         .        
+#> [37,]  .         .          .         .        
+#> [38,]  .         .          .         .        
+#> [39,]  .         .          .         .        
+#> [40,]  .         .          .         .        
+#> [41,]  .         .          .         .        
+#> [42,]  .         .          .         .        
+#> [43,]  .         .          .         .        
+#> [44,]  .         .          .         .        
+#> [45,]  .         .          .         .        
+#> [46,]  .         .          .         .        
+#> [47,]  .         .          .         .        
+#> [48,]  .         .          .         .        
+#> [49,]  .         .          .         .        
 #> [50,]  .         .          .         .
 ```
+
+### ar(1) model
+
+``` r
+library(fastcpd)
+set.seed(1)
+n <- 1000
+p <- 1
+x <- rep(0, n + 1)
+for (i in 1:600) {
+  x[i + 1] <- 0.6 * x[i] + rnorm(1)
+}
+for (i in 601:1000) {
+  x[i + 1] <- 0.3 * x[i] + rnorm(1)
+}
+result <- fastcpd(
+  formula = ~ . - 1,
+  data = data.frame(x = x),
+  p = 1,
+  family = "ar"
+)
+summary(result)
+#> 
+#> Call:
+#> fastcpd(formula = ~. - 1, data = data.frame(x = x), family = "ar", 
+#>     p = 1)
+#> 
+#> Change points:
+#> 609 
+#> 
+#> Cost values:
+#> 304.2952 228.4288 
+#> 
+#> Parameters:
+#>   segment 1 segment 2
+#> 1 0.5648258 0.2227463
+plot(result)
+```
+
+![](man/figures/README-ar1_model-1.png)<!-- -->
+
+### ar(3) model with innovation standard deviation 3
+
+``` r
+library(fastcpd)
+set.seed(1)
+n <- 1000
+p <- 1
+x <- rep(0, n + 3)
+for (i in 1:600) {
+  x[i + 3] <- 0.6 * x[i + 2] - 0.2 * x[i + 1] + 0.1 * x[i] + rnorm(1, 0, 3)
+}
+for (i in 601:1000) {
+  x[i + 1] <- 0.3 * x[i + 2] + 0.4 * x[i + 1] + 0.2 * x[i] + rnorm(1, 0, 3)
+}
+result <- fastcpd(
+  formula = ~ . - 1,
+  data = data.frame(x = x),
+  p = 3,
+  family = "ar"
+)
+summary(result)
+#> 
+#> Call:
+#> fastcpd(formula = ~. - 1, data = data.frame(x = x), family = "ar", 
+#>     p = 3)
+#> 
+#> Change points:
+#> 615 
+#> 
+#> Cost values:
+#> 2753.547 2022.597 
+#> 
+#> Parameters:
+#>     segment 1   segment 2
+#> 1  0.57616905  0.13006290
+#> 2 -0.21476408 -0.03084403
+#> 3  0.07938272 -0.04544551
+plot(result)
+```
+
+![](man/figures/README-ar3_model_with_innovation_standard_deviation_3-1.png)<!-- -->
 
 ### custom logistic regression
 
@@ -472,7 +625,15 @@ summary(result_custom_two_epochs)
 #>     cost_hessian = logistic_loss_hessian)
 #> 
 #> Change points:
-#> 200
+#> 200 
+#> 
+#> Parameters:
+#>    segment 1  segment 2
+#> 1 -0.6235240  2.0066479
+#> 2 -1.6767614  1.6278889
+#> 3 -1.7973433  4.6422022
+#> 4 -0.4842969 -0.1521062
+#> 5  2.0797875  2.4047092
 ```
 
 ### custom cost function mean change
@@ -800,7 +961,15 @@ summary(huber_regression_result)
 #>     cost = huber_loss, cost_gradient = huber_loss_gradient, cost_hessian = huber_loss_hessian)
 #> 
 #> Change points:
-#> 401 726
+#> 401 726 
+#> 
+#> Parameters:
+#>     segment 1   segment 2    segment 3
+#> 1 -0.52615415  2.77991463  8.744706508
+#> 2 -1.02443443  5.06390528  9.506534878
+#> 3 -0.09220421  0.01647923 -0.008908851
+#> 4 -0.01326592 -0.08103008 -0.047909865
+#> 5  0.02526703  0.01329142  0.025171681
 ```
 
 </details>
@@ -811,9 +980,15 @@ Encountered a bug or unintended behavior?
 
 1.  File a ticket at [GitHub
     Issues](https://github.com/doccstat/fastcpd/issues).
-2.  Contact the developers specified in [DESCRIPTION](/DESCRIPTION).
+2.  Contact the authors specified in
+    [DESCRIPTION](https://github.com/doccstat/fastcpd/blob/main/DESCRIPTION#L5-L10).
 
 ## Stargazers over time
 
 [![Stargazers over
 time](https://starchart.cc/doccstat/fastcpd.svg)](https://starchart.cc/doccstat/fastcpd)
+
+## Codecov Icicle
+
+[![Codecov
+Icicle](https://codecov.io/gh/doccstat/fastcpd/graphs/icicle.svg)](https://app.codecov.io/gh/doccstat/fastcpd?branch=main)
