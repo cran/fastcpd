@@ -3,510 +3,11 @@
 #' @description \code{fastcpd} takes in formulas, data, families and extra
 #' parameters and returns a \code{fastcpd} object.
 #'
-#' @examples
-#' \donttest{
-#' if (!requireNamespace("ggplot2", quietly = TRUE)) utils::install.packages(
-#'   "ggplot2", repos = "https://cloud.r-project.org", quiet = TRUE
-#' )
-#'
-#' ### linear regression
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 3
-#' x <- mvtnorm::rmvnorm(300, rep(0, p), diag(p))
-#' theta_0 <- rbind(c(1, 1.2, -1), c(-1, 0, 0.5), c(0.5, -0.3, 0.2))
-#' y <- c(
-#'   x[1:100, ] %*% theta_0[1, ] + rnorm(100, 0, 1),
-#'   x[101:200, ] %*% theta_0[2, ] + rnorm(100, 0, 1),
-#'   x[201:300, ] %*% theta_0[3, ] + rnorm(100, 0, 1)
-#' )
-#' result <- fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data.frame(y = y, x = x),
-#'   family = "gaussian"
-#' )
-#' plot(result)
-#' summary(result)
-#'
-#' ### linear regression with one-dimensional covariate
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 1
-#' x <- mvtnorm::rmvnorm(300, rep(0, p), diag(p))
-#' theta_0 <- matrix(c(1, -1, 0.5))
-#' y <- c(
-#'   x[1:100, ] * theta_0[1, ] + rnorm(100, 0, 1),
-#'   x[101:200, ] * theta_0[2, ] + rnorm(100, 0, 1),
-#'   x[201:300, ] * theta_0[3, ] + rnorm(100, 0, 1)
-#' )
-#' result <- fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data.frame(y = y, x = x),
-#'   family = "gaussian"
-#' )
-#' plot(result)
-#' summary(result)
-#'
-#' ### linear regression with noise variance not equal to 1
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 4
-#' n <- 300
-#' cp <- c(100, 200)
-#' x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
-#' theta_0 <- rbind(c(1, 3.2, -1, 0), c(-1, -0.5, 2.5, -2), c(0.8, -0.3, 1, 1))
-#' y <- c(
-#'   x[1:cp[1], ] %*% theta_0[1, ] + rnorm(cp[1], 0, sd = 3),
-#'   x[(cp[1] + 1):cp[2], ] %*% theta_0[2, ] + rnorm(cp[2] - cp[1], 0, sd = 3),
-#'   x[(cp[2] + 1):n, ] %*% theta_0[3, ] + rnorm(n - cp[2], 0, sd = 3)
-#' )
-#'
-#' result <- fastcpd(
-#'   data = data.frame(y = y, x = x),
-#'   family = "gaussian"
-#' )
-#' summary(result)
-#'
-#' ### logistic regression
-#' library(fastcpd)
-#' set.seed(1)
-#' x <- matrix(rnorm(1500, 0, 1), ncol = 5)
-#' theta <- rbind(rnorm(5, 0, 1), rnorm(5, 2, 1))
-#' y <- c(
-#'   rbinom(125, 1, 1 / (1 + exp(-x[1:125, ] %*% theta[1, ]))),
-#'   rbinom(175, 1, 1 / (1 + exp(-x[126:300, ] %*% theta[2, ])))
-#' )
-#' result <- suppressWarnings(fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data.frame(y = y, x = x),
-#'   family = "binomial"
-#' ))
-#' summary(result)
-#'
-#' ### poisson regression
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 3
-#' x <- mvtnorm::rmvnorm(1500, rep(0, p), diag(p))
-#' delta <- rnorm(p)
-#' theta_0 <- c(1, 1.2, -1)
-#' y <- c(
-#'   rpois(300, exp(x[1:300, ] %*% theta_0)),
-#'   rpois(400, exp(x[301:700, ] %*% (theta_0 + delta))),
-#'   rpois(300, exp(x[701:1000, ] %*% theta_0)),
-#'   rpois(100, exp(x[1001:1100, ] %*% (theta_0 - delta))),
-#'   rpois(200, exp(x[1101:1300, ] %*% theta_0)),
-#'   rpois(200, exp(x[1301:1500, ] %*% (theta_0 + delta)))
-#' )
-#' result <- fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data.frame(y = y, x = x),
-#'   beta = (p + 1) * log(1500) / 2,
-#'   k = function(x) 0,
-#'   family = "poisson",
-#'   epsilon = 1e-5
-#' )
-#' summary(result)
-#' result_two_epochs <- fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data.frame(y = y, x = x),
-#'   beta = (p + 1) * log(1500) / 2,
-#'   k = function(x) 1,
-#'   family = "poisson",
-#'   epsilon = 1e-4
-#' )
-#' summary(result_two_epochs)
-#'
-#' ### penalized linear regression
-#' library(fastcpd)
-#' set.seed(1)
-#' n <- 1500
-#' p_true <- 6
-#' p <- 50
-#' x <- mvtnorm::rmvnorm(1500, rep(0, p), diag(p))
-#' theta_0 <- rbind(
-#'   runif(p_true, -5, -2),
-#'   runif(p_true, -3, 3),
-#'   runif(p_true, 2, 5),
-#'   runif(p_true, -5, 5)
-#' )
-#' theta_0 <- cbind(theta_0, matrix(0, ncol = p - p_true, nrow = 4))
-#' y <- c(
-#'   x[1:300, ] %*% theta_0[1, ] + rnorm(300, 0, 1),
-#'   x[301:700, ] %*% theta_0[2, ] + rnorm(400, 0, 1),
-#'   x[701:1000, ] %*% theta_0[3, ] + rnorm(300, 0, 1),
-#'   x[1001:1500, ] %*% theta_0[4, ] + rnorm(500, 0, 1)
-#' )
-#' result <- fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data.frame(y = y, x = x),
-#'   family = "lasso"
-#' )
-#' plot(result)
-#' summary(result)
-#'
-#' ### ar(1) model
-#' library(fastcpd)
-#' set.seed(1)
-#' n <- 1000
-#' p <- 1
-#' x <- rep(0, n + 1)
-#' for (i in 1:600) {
-#'   x[i + 1] <- 0.6 * x[i] + rnorm(1)
-#' }
-#' for (i in 601:1000) {
-#'   x[i + 1] <- 0.3 * x[i] + rnorm(1)
-#' }
-#' result <- fastcpd(
-#'   formula = ~ . - 1,
-#'   data = data.frame(x = x),
-#'   p = 1,
-#'   family = "ar"
-#' )
-#' summary(result)
-#' plot(result)
-#'
-#' ### ar(3) model with innovation standard deviation 3
-#' library(fastcpd)
-#' set.seed(1)
-#' n <- 1000
-#' p <- 1
-#' x <- rep(0, n + 3)
-#' for (i in 1:600) {
-#'   x[i + 3] <- 0.6 * x[i + 2] - 0.2 * x[i + 1] + 0.1 * x[i] + rnorm(1, 0, 3)
-#' }
-#' for (i in 601:1000) {
-#'   x[i + 1] <- 0.3 * x[i + 2] + 0.4 * x[i + 1] + 0.2 * x[i] + rnorm(1, 0, 3)
-#' }
-#' result <- fastcpd(
-#'   formula = ~ . - 1,
-#'   data = data.frame(x = x),
-#'   p = 3,
-#'   family = "ar"
-#' )
-#' summary(result)
-#' plot(result)
-#'
-#' ### custom logistic regression
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 5
-#' x <- matrix(rnorm(375 * p, 0, 1), ncol = p)
-#' theta <- rbind(rnorm(p, 0, 1), rnorm(p, 2, 1))
-#' y <- c(
-#'   rbinom(200, 1, 1 / (1 + exp(-x[1:200, ] %*% theta[1, ]))),
-#'   rbinom(175, 1, 1 / (1 + exp(-x[201:375, ] %*% theta[2, ])))
-#' )
-#' data <- data.frame(y = y, x = x)
-#' result_builtin <- suppressWarnings(fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data,
-#'   family = "binomial"
-#' ))
-#' logistic_loss <- function(data, theta) {
-#'   x <- data[, -1]
-#'   y <- data[, 1]
-#'   u <- x %*% theta
-#'   nll <- -y * u + log(1 + exp(u))
-#'   nll[u > 10] <- -y[u > 10] * u[u > 10] + u[u > 10]
-#'   sum(nll)
-#' }
-#' logistic_loss_gradient <- function(data, theta) {
-#'   x <- data[nrow(data), -1]
-#'   y <- data[nrow(data), 1]
-#'   c(-(y - 1 / (1 + exp(-x %*% theta)))) * x
-#' }
-#' logistic_loss_hessian <- function(data, theta) {
-#'   x <- data[nrow(data), -1]
-#'   prob <- 1 / (1 + exp(-x %*% theta))
-#'   (x %o% x) * c((1 - prob) * prob)
-#' }
-#' result_custom <- fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data,
-#'   epsilon = 1e-5,
-#'   cost = logistic_loss,
-#'   cost_gradient = logistic_loss_gradient,
-#'   cost_hessian = logistic_loss_hessian
-#' )
-#' cat(
-#'   "Change points detected by built-in logistic regression model: ",
-#'   result_builtin@cp_set, "\n",
-#'   "Change points detected by custom logistic regression model: ",
-#'   result_custom@cp_set, "\n",
-#'   sep = ""
-#' )
-#' result_custom_two_epochs <- fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data,
-#'   k = function(x) 1,
-#'   epsilon = 1e-5,
-#'   cost = logistic_loss,
-#'   cost_gradient = logistic_loss_gradient,
-#'   cost_hessian = logistic_loss_hessian
-#' )
-#' summary(result_custom_two_epochs)
-#'
-#' ### custom cost function mean change
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 1
-#' data <- rbind(
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(100, p)),
-#'   mvtnorm::rmvnorm(400, mean = rep(50, p), sigma = diag(100, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(2, p), sigma = diag(100, p))
-#' )
-#' segment_count_guess <- 10
-#' block_size <- max(floor(sqrt(nrow(data)) / (segment_count_guess + 1)), 2)
-#' block_count <- floor(nrow(data) / block_size)
-#' data_all_vars <- rep(0, block_count)
-#' for (block_index in seq_len(block_count)) {
-#'   block_start <- (block_index - 1) * block_size + 1
-#'   block_end <- if (block_index < block_count) {
-#'     block_index * block_size
-#'   } else {
-#'     nrow(data)
-#'   }
-#'   data_all_vars[block_index] <- var(data[block_start:block_end, ])
-#' }
-#' data_all_var <- mean(data_all_vars)
-#' mean_loss <- function(data) {
-#'   n <- nrow(data)
-#'   n / 2 * (
-#'     log(data_all_var) + log(2 * pi) +
-#'       sum((data - colMeans(data))^2 / data_all_var) / n
-#'   )
-#' }
-#' mean_loss_result <- fastcpd(
-#'   formula = ~ . - 1,
-#'   data = data.frame(data),
-#'   beta = (p + 1) * log(nrow(data)) / 2,
-#'   p = p,
-#'   cost = mean_loss
-#' )
-#' summary(mean_loss_result)
-#'
-#' ### custom cost function multivariate mean change
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 3
-#' data <- rbind(
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(100, p)),
-#'   mvtnorm::rmvnorm(400, mean = rep(50, p), sigma = diag(100, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(2, p), sigma = diag(100, p))
-#' )
-#' segment_count_guess <- 5
-#' block_size <- max(floor(sqrt(nrow(data)) / (segment_count_guess + 1)), 2)
-#' block_count <- floor(nrow(data) / block_size)
-#' data_all_covs <- array(NA, dim = c(block_count, p, p))
-#' for (block_index in seq_len(block_count)) {
-#'   block_start <- (block_index - 1) * block_size + 1
-#'   block_end <- if (block_index < block_count) {
-#'     block_index * block_size
-#'   } else {
-#'     nrow(data)
-#'   }
-#'   data_all_covs[block_index, , ] <- cov(data[block_start:block_end, ])
-#' }
-#' data_all_cov <- colMeans(data_all_covs)
-#' mean_loss <- function(data) {
-#'   n <- nrow(data)
-#'   demeaned_data <- sweep(data, 2, colMeans(data))
-#'   n / 2 * (
-#'     log(det(data_all_cov)) + p * log(2 * pi) +
-#'       sum(diag(solve(data_all_cov, crossprod(demeaned_data)))) / n
-#'   )
-#' }
-#' mean_loss_result <- fastcpd(
-#'   formula = ~ . - 1,
-#'   data = data.frame(data),
-#'   beta = (p + 1) * log(nrow(data)) / 2,
-#'   p = p,
-#'   cost = mean_loss
-#' )
-#' summary(mean_loss_result)
-#'
-#' ### custom cost function variance change
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 1
-#' data <- rbind.data.frame(
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(400, mean = rep(0, p), sigma = diag(50, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(2, p))
-#' )
-#' data_all_mean <- colMeans(data)
-#' var_loss <- function(data) {
-#'   n <- nrow(data)
-#'   data_cov <- crossprod(sweep(data, 2, data_all_mean)) / (n - 1)
-#'   n / 2 * (log(data_cov) + log(2 * pi) + (n - 1) / n)
-#' }
-#' var_loss_result <- fastcpd(
-#'   formula = ~ . - 1,
-#'   data = data,
-#'   beta = (p + 1) * log(nrow(data)) / 2,
-#'   p = p,
-#'   cost = var_loss
-#' )
-#' summary(var_loss_result)
-#'
-#' ### custom cost function multivariate variance change
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 3
-#' data <- rbind.data.frame(
-#'   mvtnorm::rmvnorm(
-#'     300, rep(0, p), crossprod(matrix(runif(p^2) * 2 - 1, p))
-#'   ),
-#'   mvtnorm::rmvnorm(
-#'     400, rep(0, p), crossprod(matrix(runif(p^2) * 2 - 1, p))
-#'   ),
-#'   mvtnorm::rmvnorm(
-#'     300, rep(0, p), crossprod(matrix(runif(p^2) * 2 - 1, p))
-#'   )
-#' )
-#' data_all_mean <- colMeans(data)
-#' var_loss <- function(data) {
-#'   n <- nrow(data)
-#'   p <- ncol(data)
-#'   if (n < p) {
-#'     data_cov <- diag(p)
-#'   } else {
-#'     data_cov <- crossprod(sweep(data, 2, data_all_mean)) / (n - 1)
-#'   }
-#'   n / 2 * (log(det(data_cov)) + p * log(2 * pi) + p * (n - 1) / n)
-#' }
-#' var_loss_result <- fastcpd(
-#'   formula = ~ . - 1,
-#'   data = data,
-#'   beta = (p^2 + 1) * log(nrow(data)) / 2,
-#'   trim = 0.1,
-#'   p = p^2,
-#'   cost = var_loss
-#' )
-#' summary(var_loss_result)
-#'
-#' ### custom cost function mean or variance change
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 1
-#' data <- rbind.data.frame(
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(50, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(10, p), sigma = diag(50, p))
-#' )
-#' meanvar_loss <- function(data) {
-#'   n <- nrow(data)
-#'   data_cov <- 1
-#'   if (n > 1) {
-#'     data_cov <- var(data)
-#'   }
-#'   n / 2 * (log(data_cov) + log(2 * pi) + (n - 1) / n)
-#' }
-#' meanvar_loss_result <- fastcpd(
-#'   formula = ~ . - 1,
-#'   data = data,
-#'   beta = (p^2 + p + 1) * log(nrow(data)) / 2,
-#'   p = p^2 + p,
-#'   cost = meanvar_loss
-#' )
-#' summary(meanvar_loss_result)
-#'
-#' ### custom cost function multivariate mean or variance change
-#' library(fastcpd)
-#' set.seed(1)
-#' p <- 3
-#' data <- rbind.data.frame(
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(50, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
-#'   mvtnorm::rmvnorm(300, mean = rep(10, p), sigma = diag(50, p))
-#' )
-#' meanvar_loss <- function(data) {
-#'   n <- nrow(data)
-#'   p <- ncol(data)
-#'   if (n <= p) {
-#'     data_cov <- diag(p)
-#'   } else {
-#'     data_cov <- cov(data)
-#'   }
-#'   n / 2 * (log(det(data_cov)) + p * log(2 * pi) + p * (n - 1) / n)
-#' }
-#' meanvar_loss_result <- fastcpd(
-#'   formula = ~ . - 1,
-#'   data = data,
-#'   beta = (p^2 + p + 1) * log(nrow(data)) / 2,
-#'   trim = 0.01,
-#'   p = p^2 + p,
-#'   cost = meanvar_loss
-#' )
-#' summary(meanvar_loss_result)
-#'
-#' ### custom cost function huber regression
-#' library(fastcpd)
-#' set.seed(1)
-#' n <- 400 + 300 + 500
-#' p <- 5
-#' x <- mvtnorm::rmvnorm(n, mean = rep(0, p), sigma = diag(p))
-#' theta <- rbind(
-#'   mvtnorm::rmvnorm(1, mean = rep(0, p - 3), sigma = diag(p - 3)),
-#'   mvtnorm::rmvnorm(1, mean = rep(5, p - 3), sigma = diag(p - 3)),
-#'   mvtnorm::rmvnorm(1, mean = rep(9, p - 3), sigma = diag(p - 3))
-#' )
-#' theta <- cbind(theta, matrix(0, 3, 3))
-#' theta <- theta[rep(seq_len(3), c(400, 300, 500)), ]
-#' y_true <- rowSums(x * theta)
-#' factor <- c(
-#'   2 * stats::rbinom(400, size = 1, prob = 0.95) - 1,
-#'   2 * stats::rbinom(300, size = 1, prob = 0.95) - 1,
-#'   2 * stats::rbinom(500, size = 1, prob = 0.95) - 1
-#' )
-#' y <- factor * y_true + stats::rnorm(n)
-#' data <- cbind.data.frame(y, x)
-#' huber_threshold <- 1
-#' huber_loss <- function(data, theta) {
-#'   residual <- data[, 1] - data[, -1, drop = FALSE] %*% theta
-#'   indicator <- abs(residual) <= huber_threshold
-#'   sum(
-#'     residual^2 / 2 * indicator +
-#'       huber_threshold * (
-#'         abs(residual) - huber_threshold / 2
-#'       ) * (1 - indicator)
-#'   )
-#' }
-#' huber_loss_gradient <- function(data, theta) {
-#'   residual <- c(data[nrow(data), 1] - data[nrow(data), -1] %*% theta)
-#'   if (abs(residual) <= huber_threshold) {
-#'     -residual * data[nrow(data), -1]
-#'   } else {
-#'     -huber_threshold * sign(residual) * data[nrow(data), -1]
-#'   }
-#' }
-#' huber_loss_hessian <- function(data, theta) {
-#'   residual <- c(data[nrow(data), 1] - data[nrow(data), -1] %*% theta)
-#'   if (abs(residual) <= huber_threshold) {
-#'     outer(data[nrow(data), -1], data[nrow(data), -1])
-#'   } else {
-#'     0.01 * diag(length(theta))
-#'   }
-#' }
-#' huber_regression_result <- fastcpd(
-#'   formula = y ~ . - 1,
-#'   data = data,
-#'   beta = (p + 1) * log(n) / 2,
-#'   cost = huber_loss,
-#'   cost_gradient = huber_loss_gradient,
-#'   cost_hessian = huber_loss_hessian
-#' )
-#' summary(huber_regression_result)
-#' }
+#' @example tests/testthat/examples/fastcpd.txt
 #'
 #' @md
+#' @section Gallery:
+#'   <https://fastcpd.xingchi.li/articles/gallery.html>
 #' @section References:
 #'   Zhang X, Dawn T (2023). ``Sequential Gradient Descent and Quasi-Newton's
 #'   Method for Change-Point Analysis.'' In Ruiz, Francisco, Dy, Jennifer,
@@ -574,8 +75,9 @@
 #'   affect the performance of the algorithm. This parameter is left for the
 #'   users to tune the performance of the algorithm if the result is not
 #'   ideal. Details are discussed in the paper.
-#' @param family Family of the model. Can be \code{"gaussian"},
-#'   \code{"binomial"}, \code{"poisson"}, \code{"lasso"}, \code{"custom"} or
+#' @param family Family of the model. Can be \code{"lm"}, \code{"binomial"},
+#'   \code{"poisson"}, \code{"lasso"}, \code{"custom"}, \code{"ar"},
+#'   \code{"var"}, \code{"ma"}, \code{"arima"}, \code{"garch"} or
 #'   \code{NULL}. For simplicity, user can also omit this parameter,
 #'   indicating that they will be using their own cost functions. Omitting the
 #'   parameter is the same as specifying the parameter to be \code{"custom"}
@@ -591,7 +93,9 @@
 #'   to be winsorised.
 #' @param p Number of covariates in the model. If not specified, the number of
 #'   covariates will be inferred from the data, i.e.,
-#'   \code{p = ncol(data) - 1}.
+#'   \code{p = ncol(data) - 1}. This parameter is superseded by `order` in the
+#'   case of time series models: "ar", "var", "arima".
+#' @param order Order of the AR(p), VAR(p) or ARIMA(p, d, q) model.
 #' @param cost Cost function to be used. This and the following two parameters
 #'   should not be specified at the same time with \code{family}. If not
 #'   specified, the default is the negative log-likelihood for the
@@ -653,16 +157,28 @@
 #'   processed through sequential gradient descent.
 #' @param warm_start If \code{TRUE}, the algorithm will use the estimated
 #'   parameters from the previous segment as the initial value for the
-#'   current segment. This parameter is only used for family \code{"gaussian"},
-#'   \code{"binomial"} and \code{"poisson"}.
+#'   current segment. This parameter is only used for \code{"glm"} families.
+#' @param lower Lower bound for the parameters. Used to specify the
+#'   domain of the parameter after each gradient descent step. If not specified,
+#'   the lower bound will be set to be \code{-Inf} for all parameters.
+#' @param upper Upper bound for the parameters. Used to specify the
+#'   domain of the parameter after each gradient descent step. If not specified,
+#'   the upper bound will be set to be \code{Inf} for all parameters.
+#' @param line_search If a vector of numeric values are provided, line
+#'   search will be performed to find the optimal step size for each update.
+#' @param ... Parameters specifically used for time series models. As of
+#'   the current implementation, only \code{include.mean} will not be ignored
+#'   and used in the ARIMA or GARCH model.
 #'
 #' @return A class \code{fastcpd} object.
 #'
 #' @export
-#' @importFrom Rcpp evalCpp
+#' @importFrom fastglm fastglm
+#' @importFrom glmnet glmnet cv.glmnet predict.glmnet
 #' @importFrom methods show
+#' @importFrom Rcpp evalCpp
 #' @useDynLib fastcpd, .registration = TRUE
-fastcpd <- function(
+fastcpd <- function(  # nolint: cyclomatic complexity
   formula = y ~ . - 1,
   data,
   beta = NULL,
@@ -676,13 +192,37 @@ fastcpd <- function(
   winsorise_minval = -20,
   winsorise_maxval = 20,
   p = ncol(data) - 1,
+  order = c(0, 0, 0),
   cost = NULL,
   cost_gradient = NULL,
   cost_hessian = NULL,
   cp_only = FALSE,
   vanilla_percentage = 0,
-  warm_start = FALSE
+  warm_start = FALSE,
+  lower = NULL,
+  upper = NULL,
+  line_search = c(1),
+  ...
 ) {
+  family <- ifelse(is.null(family), "custom", tolower(family))
+
+  # Vanilla is not a `fastcpd` family and can not be set manually by the user.
+  # `vanilla` is used to distinguish the cost function parameters in the
+  # implementation.
+  stopifnot(
+    check_family(
+      family,
+      c(
+        "lm", "binomial", "poisson", "lasso", "mlasso",
+        "mean", "variance", "meanvariance", "mv",
+        "arma", "ar", "var", "ma", "arima", "garch",
+        "custom"
+      )
+    )
+  )
+
+  stopifnot(check_cost(cost, cost_gradient, cost_hessian, family))
+
   # The following code is adapted from the `lm` function from base R.
   match_formula <- match.call(expand.dots = FALSE)
   matched_formula <- match(c("formula", "data"), names(match_formula), 0L)
@@ -690,79 +230,91 @@ fastcpd <- function(
   match_formula$drop.unused.levels <- TRUE
   match_formula[[1L]] <- quote(stats::model.frame)
   match_formula <- eval(match_formula, parent.frame())
-  mt <- attr(match_formula, "terms")
   y <- stats::model.response(match_formula, "any")
-  x <- stats::model.matrix(mt, match_formula)
-  data <- cbind(y, x)
+  data_ <- cbind(y, stats::model.matrix(formula, data = data))
 
-  # Vanilla is not a `fastcpd` family and can not be set manually by the user.
-  # `vanilla` is used to distinguish the cost function parameters in the
-  # implementation.
-  allowed_family <- c(
-    "gaussian", "binomial", "poisson", "lasso", "custom", "ar", "var"
-  )
+  p_response <- if (family == "mlasso") ncol(y) else 1
 
   fastcpd_family <- NULL
-  fastcpd_data <- NULL
-
-  # If `family` is provided and not in the allowed family list, throw an error.
-  if (!(is.null(family) || family %in% allowed_family)) {
-    error_message <- r"[
-The family should be one of "gaussian", "binomial", "poisson", "lasso", "ar",
-"var", "custom" or `NULL` while the provided family is {family}.]"
-    stop(gsub("{family}", family, error_message, fixed = TRUE))
-  }
-
-  # If the family is not provided, or a custom cost function is provided, the
-  # family will be set to be "custom". No need to check the gradient or
-  # Hessian since providing a custom gradient or Hessian requires a custom
-  # cost function.
-  if (is.null(family) || !is.null(cost)) {
-    family <- "custom"
-  }
 
   # If a cost function provided has an explicit solution, i.e. does not depend
-  # on the parameters, e.g., mean change, then the `family` is set to be
-  # `"vanilla"` and the percentage of vanilla PELT is set to be 1.
+  # on the parameters, e.g., mean change, then the percentage of vanilla PELT
+  # is set to be 1.
   if (!is.null(cost) && length(formals(cost)) == 1) {
     family <- "custom"
-    fastcpd_family <- "vanilla"
     vanilla_percentage <- 1
   }
 
+  if (family == "mean") {
+    vanilla_percentage <- 1
+    p <- ncol(data_)
+    block_size <- max(floor(sqrt(nrow(data_)) / (segment_count + 1)), 2)
+    block_count <- floor(nrow(data_) / block_size)
+    data_all_covs <- array(NA, dim = c(block_count, p, p))
+    for (block_index in seq_len(block_count)) {
+      block_start <- (block_index - 1) * block_size + 1
+      block_end <- if (block_index < block_count) {
+        block_index * block_size
+      } else {
+        nrow(data_)
+      }
+      data_all_covs[block_index, , ] <-
+        stats::cov(data_[block_start:block_end, , drop = FALSE])
+    }
+    mean_data_cov <- colMeans(data_all_covs)
+  } else {
+    mean_data_cov <- diag(1)
+  }
+
+  if (family == "variance") {
+    vanilla_percentage <- 1
+    p <- ncol(data_)^2
+  }
+
+  if (family == "meanvariance" || family == "mv") {
+    vanilla_percentage <- 1
+    p <- ncol(data_) + ncol(data_)^2
+  }
+
+  # Pre-process the data for the time series models.
   if (family == "ar") {
     # Check the validity of the parameters for AR(p) model.
-    if (ncol(data) != 1) {
-      stop("The data should be a univariate time series.")
-    }
-    if (p == 0) {
-      stop("Please specify the order of the AR model as the parameter `p`.")
-    }
-    fastcpd_family <- "gaussian"
-    y <- data[p + seq_len(nrow(data) - p), ]
-    x <- matrix(NA, nrow(data) - p, p)
-    for (p_i in seq_len(p)) {
-      x[, p_i] <- data[(p - p_i) + seq_len(nrow(data) - p), ]
-    }
-    fastcpd_data <- cbind(y, x)
-  }
+    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
+    stopifnot(check_ar_order(order))
 
-  if (family == "var") {
-    fastcpd_family <- "vanilla"
+    if (length(order) == 3) {
+      family <- "arima"
+    } else {
+      # Preprocess the data for AR(p) model to be used in linear regression.
+      p <- order
+      fastcpd_family <- "gaussian"
+      y <- data_[p + seq_len(nrow(data_) - p), ]
+      x <- matrix(NA, nrow(data_) - p, p)
+      for (p_i in seq_len(p)) {
+        x[, p_i] <- data_[(p - p_i) + seq_len(nrow(data_) - p), ]
+      }
+      data_ <- cbind(y, x)
+    }
+  } else if (family == "var") {
+    stopifnot(check_var_order(order))
+    fastcpd_family <- "custom"
+
+    # Preprocess the data for VAR(p) model to be used in linear regression.
     vanilla_percentage <- 1
-    y <- data[p + seq_len(nrow(data) - p), ]
-    x <- matrix(NA, nrow(data) - p, p * ncol(data))
-    for (p_i in seq_len(p)) {
-      x[, (p_i - 1) * ncol(data) + seq_len(ncol(data))] <-
-        data[(p - p_i) + seq_len(nrow(data) - p), ]
+    y <- data_[order + seq_len(nrow(data_) - order), ]
+    x <- matrix(NA, nrow(data_) - order, order * ncol(data_))
+    for (p_i in seq_len(order)) {
+      x[, (p_i - 1) * ncol(data_) + seq_len(ncol(data_))] <-
+        data_[(order - p_i) + seq_len(nrow(data_) - order), ]
     }
-    fastcpd_data <- cbind(y, x)
+    data_ <- cbind(y, x)
+    lm_x_col <- order * ncol(data)
     cost <- function(data) {
-      x <- data[, (ncol(data) - p + 1):ncol(data)]
-      y <- data[, 1:(ncol(data) - p)]
+      x <- data[, (ncol(data) - lm_x_col + 1):ncol(data)]
+      y <- data[, 1:(ncol(data) - lm_x_col)]
 
-      if (nrow(data) <= p + 1) {
-        x_t_x <- diag(p)
+      if (nrow(data) <= lm_x_col + 1) {
+        x_t_x <- diag(lm_x_col)
       } else {
         x_t_x <- crossprod(x)
       }
@@ -770,81 +322,159 @@ The family should be one of "gaussian", "binomial", "poisson", "lasso", "ar",
       # TODO(doccstat): Verify the correctness of the cost function for VAR(p).
       norm(y - x %*% solve(x_t_x, t(x)) %*% y, type = "F")^2 / 2
     }
+    p <- order^2 * ncol(data_)
+  } else if (family == "ma") {
+    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
+    stopifnot(check_ma_order(order))
+    family <- "arima"
+    order <- c(rep(0, 3 - length(order)), order)
+  }
+
+  if (family == "arma") {
+    p <- sum(order) + 1
+  }
+
+  if (family == "arima") {
+    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
+    stopifnot(check_arima_order(order))
+    fastcpd_family <- "custom"
+    vanilla_percentage <- 1
+
+    # By default in time series models, `include.mean` is set to be `TRUE`.
+    include_mean <- TRUE
+    if (methods::hasArg("include.mean")) {
+      include_mean <- eval.parent(match.call()[["include.mean"]])
+    }
+    cost <- function(data) {
+      tryCatch(
+        expr = -forecast::Arima(
+          c(data), order = order, method = "ML", include.mean = include_mean
+        )$loglik,
+        error = function(e) 0
+      )
+    }
+    p <- sum(order[-2]) + 1 + include_mean
+  } else if (family == "garch") {
+    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
+    stopifnot(check_garch_order(order))
+    fastcpd_family <- "custom"
+    vanilla_percentage <- 1
+
+    cost <- function(data) {
+      tryCatch(
+        expr = tseries::garch(data, order, trace = FALSE)$n.likeli,
+        error = function(e) 0
+      )
+    }
+    p <- 1 + sum(order)
+  }
+
+  if (family == "lm") {
+    fastcpd_family <- "gaussian"
+  }
+
+  if (family == "mlasso") {
+    fastcpd_family <- "mgaussian"
   }
 
   if (is.null(fastcpd_family)) {
     fastcpd_family <- family
   }
 
-  if (is.null(fastcpd_data)) {
-    fastcpd_data <- data
-  }
-
-  # Use the `beta` value obtained from BIC. For linear regression models,
-  # an estimate of the variance is needed in the cost function. The variance
-  # estimation is only for "gaussian" family with no `beta` provided.
   if (is.null(beta)) {
-    beta <- (p + 1) * log(nrow(fastcpd_data)) / 2
+    if (nrow(data_) < 500) {
+      # Use the `beta` value obtained from BIC.
+      beta <- (p + 1) * log(nrow(data_)) / 2
+    } else {
+      # Use the `beta` value obtained from Modified BIC.
+      beta <- (p + 2) * log(nrow(data_)) / 2
+    }
 
-    # Only estimate the variance for Gaussian family when `beta` is null.
     # TODO(doccstat): Variance estimation for VAR(p).
-    if (fastcpd_family == "gaussian") {
+    # For linear regression models, an estimate of the variance is needed in the
+    # cost function. The variance estimation is only for "lm" family with no
+    # `beta` provided. Only estimate the variance for Gaussian family when
+    # `beta` is null.
+    if (family == "lm" || fastcpd_family == "gaussian") {
       # Estimate the variance for each block and then take the average.
-      n <- nrow(fastcpd_data)
-      block_size <- 5
+      n <- nrow(data_)
+      block_size <- p + 1
       variance_estimation <- rep(NA, n - block_size)
-      for (i in 1:(n - block_size)) {
+      for (i in seq_len(n - block_size)) {
         block_index <- seq_len(block_size) + i - 1
         block_index_lagged <- seq_len(block_size) + i
 
-        y_block <- y[block_index]
-        x_block <- x[block_index, , drop = FALSE]
+        y_block <- data_[block_index, 1]
+        x_block <- data_[block_index, -1, drop = FALSE]
 
-        y_block_lagged <- y[block_index_lagged]
-        x_block_lagged <- x[block_index_lagged, , drop = FALSE]
+        y_block_lagged <- data_[block_index_lagged, 1]
+        x_block_lagged <- data_[block_index_lagged, -1, drop = FALSE]
 
         x_t_x <- crossprod(x_block)
         x_t_x_lagged <- crossprod(x_block_lagged)
 
-        block_slope <- solve(crossprod(x_block), crossprod(x_block, y_block))
-        block_lagged_slope <- solve(
-          crossprod(x_block_lagged), crossprod(x_block_lagged, y_block_lagged)
+        tryCatch(
+          expr = {
+            block_slope <-
+              solve(crossprod(x_block), crossprod(x_block, y_block))
+            block_lagged_slope <- solve(
+              crossprod(x_block_lagged),
+              crossprod(x_block_lagged, y_block_lagged)
+            )
+            x_t_x_inv <- solve(x_t_x)
+            x_t_x_inv_lagged <- solve(x_t_x_lagged)
+            inv_product <- x_t_x_inv %*% x_t_x_inv_lagged
+            cross_term_x <- crossprod(
+              x_block[-1, , drop = FALSE],
+              x_block_lagged[-block_size, , drop = FALSE]
+            )
+            cross_term <- inv_product %*% cross_term_x
+            delta_numerator <- crossprod(block_slope - block_lagged_slope)
+            delta_denominator <-
+              sum(diag(x_t_x_inv + x_t_x_inv_lagged - 2 * cross_term))
+            variance_estimation[i] <- delta_numerator / delta_denominator
+          },
+          error = function(e) {
+            variance_estimation[i] <- NA
+            message("Variance estimation failed for block ", i, ".")
+          }
         )
-        x_t_x_inv <- solve(x_t_x)
-        x_t_x_inv_lagged <- solve(x_t_x_lagged)
-        inv_product <- x_t_x_inv %*% x_t_x_inv_lagged
-        cross_term_x <- crossprod(
-          x_block[-1, , drop = FALSE],
-          x_block_lagged[-block_size, , drop = FALSE]
-        )
-        cross_term <- inv_product %*% cross_term_x
-        delta_numerator <- crossprod(block_slope - block_lagged_slope)
-        delta_denominator <-
-          sum(diag(x_t_x_inv + x_t_x_inv_lagged - 2 * cross_term))
-        variance_estimation[i] <- delta_numerator / delta_denominator
       }
 
-      beta <- beta * mean(variance_estimation)
+      beta <- beta * mean(variance_estimation, na.rm = TRUE)
     }
   }
 
-  result <- fastcpd_impl(
-    fastcpd_data, beta, segment_count, trim, momentum_coef, k, fastcpd_family,
-    epsilon, min_prob, winsorise_minval, winsorise_maxval, p,
-    cost, cost_gradient, cost_hessian, cp_only, vanilla_percentage, warm_start
-  )
-
-  cp_set <- c(result$cp_set)
-
-  if (family %in% c("ar", "var")) {
-    cp_set <- cp_set + p
+  if (is.null(lower)) {
+    lower <- rep(-Inf, p)
   }
 
-  if (fastcpd_family == "vanilla") {
+  if (is.null(upper)) {
+    upper <- rep(Inf, p)
+  }
+
+  result <- fastcpd_impl(
+    data_, beta, segment_count, trim, momentum_coef, k, fastcpd_family,
+    epsilon, min_prob, winsorise_minval, winsorise_maxval, p, order,
+    cost, cost_gradient, cost_hessian, cp_only, vanilla_percentage, warm_start,
+    lower, upper, line_search, mean_data_cov, p_response
+  )
+
+  raw_cp_set <- c(result$raw_cp_set)
+  cp_set <- c(result$cp_set)
+
+  if (family %in% c("ar", "var") && length(order) == 1) {
+    raw_cp_set <- raw_cp_set + order
+    cp_set <- cp_set + order
+  }
+
+  if (vanilla_percentage == 1) {
     thetas <- data.frame(matrix(NA, 0, 0))
   } else {
     thetas <- data.frame(result$thetas)
-    names(thetas) <- paste0("segment ", seq_len(ncol(thetas)))
+    if (ncol(thetas) > 0) {
+      names(thetas) <- paste0("segment ", seq_len(ncol(thetas)))
+    }
   }
 
   if (is.null(result$cost_values)) {
@@ -855,10 +485,138 @@ The family should be one of "gaussian", "binomial", "poisson", "lasso", "ar",
     result$residual <- numeric(0)
   }
 
+  raw_residuals <- c(result$residual)
+
+  if (family == "mean" && p == 1) {
+    segments <- c(0, raw_cp_set, nrow(data))
+    for (segments_i in seq_len(length(segments) - 1)) {
+      segments_start <- segments[segments_i] + 1
+      segments_end <- segments[segments_i + 1]
+      segment_index <- segments_start:segments_end
+      raw_residuals[segment_index] <-
+        data[segment_index, 1] - mean(data[segment_index, 1])
+    }
+  }
+
+  if (!cp_only) {
+    tryCatch(
+      expr = if (family == "ar") {
+        raw_residuals <- c(rep(NA, p), raw_residuals)
+      } else if (family == "ma" || family == "arima") {
+        raw_residuals <- rep(NA, nrow(data))
+        segments <- c(0, raw_cp_set, nrow(data))
+        for (segments_i in seq_len(length(segments) - 1)) {
+          segments_start <- segments[segments_i] + 1
+          segments_end <- segments[segments_i + 1]
+          raw_residuals[segments_start:segments_end] <- forecast::Arima(
+            c(data[segments_start:segments_end, 1]),
+            order = order,
+            method = "ML",
+            include.mean = include_mean
+          )$residuals
+        }
+      } else if (family == "garch") {
+        raw_residuals <- rep(NA, nrow(data))
+        segments <- c(0, raw_cp_set, nrow(data))
+        for (segments_i in seq_len(length(segments) - 1)) {
+          segments_start <- segments[segments_i] + 1
+          segments_end <- segments[segments_i + 1]
+          raw_residuals[segments_start:segments_end] <- tseries::garch(
+            data[segments_start:segments_end, 1],
+            order,
+            trace = FALSE
+          )$residuals
+        }
+      },
+      error = function(e) message("Residual calculation failed.")
+    )
+  }
+
+  if (
+    length(raw_cp_set) > nrow(data) / (p + 1) &&
+      (all(raw_residuals == 0) || stats::t.test(raw_residuals)$p.value < 0.05)
+  ) {
+    message(
+      "Warning: The number of change points is larger than the number of ",
+      "observations divided by the number of covariates plus one. ",
+      "The residuals are not independent. ",
+      "Retrying with a larger `beta` value (x2)."
+    )
+    return(
+      fastcpd(
+        formula = formula,
+        data = data,
+        beta = beta * 2,
+        segment_count = segment_count,
+        trim = trim,
+        momentum_coef = momentum_coef,
+        k = k,
+        family = family,
+        epsilon = epsilon,
+        min_prob = min_prob,
+        winsorise_minval = winsorise_minval,
+        winsorise_maxval = winsorise_maxval,
+        p = p,
+        order = order,
+        cost = cost,
+        cost_gradient = cost_gradient,
+        cost_hessian = cost_hessian,
+        cp_only = cp_only,
+        vanilla_percentage = vanilla_percentage,
+        warm_start = warm_start,
+        lower = lower,
+        upper = upper,
+        line_search = line_search,
+        ...
+      )
+    )
+  }
+
   residuals <- c(result$residual)
 
-  if (family == "ar") {
-    residuals <- c(rep(NA, p), residuals)
+  if (family == "mean" && p == 1) {
+    segments <- c(0, cp_set, nrow(data))
+    for (segments_i in seq_len(length(segments) - 1)) {
+      segments_start <- segments[segments_i] + 1
+      segments_end <- segments[segments_i + 1]
+      segment_index <- segments_start:segments_end
+      residuals[segment_index] <-
+        data[segment_index, 1] - mean(data[segment_index, 1])
+    }
+  }
+
+  if (!cp_only) {
+    tryCatch(
+      expr = if (family == "ar") {
+        residuals <- c(rep(NA, p), residuals)
+      } else if (family == "ma" || family == "arima") {
+        residuals <- rep(NA, nrow(data))
+        segments <- c(0, cp_set, nrow(data))
+        for (segments_i in seq_len(length(segments) - 1)) {
+          segments_start <- segments[segments_i] + 1
+          segments_end <- segments[segments_i + 1]
+          residuals[segments_start:segments_end] <- forecast::Arima(
+            c(data[segments_start:segments_end, 1]),
+            order = order,
+            method = "ML",
+            include.mean = include_mean
+          )$residuals
+        }
+      } else if (family == "garch") {
+        residuals <- rep(NA, nrow(data))
+        segments <- c(0, cp_set, nrow(data))
+        for (segments_i in seq_len(length(segments) - 1)) {
+          segments_start <- segments[segments_i] + 1
+          segments_end <- segments[segments_i + 1]
+          residuals[segments_start:segments_end] <- tseries::garch(
+            data[segments_start:segments_end, 1],
+            order,
+            trace = FALSE
+          )$residuals
+        }
+      },
+      error = function(e) message("Residual calculation failed.")
+    )
   }
 
   methods::new(

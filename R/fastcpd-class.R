@@ -7,13 +7,13 @@
 #' with only change points or with change points and parameters, which you can
 #' select using \code{@}.
 #'
-#' @slot call The call of the function `fastcpd`.
-#' @slot data The data passed to the `fastcpd` function.
+#' @slot call The call of the function.
+#' @slot data The data passed to the function.
 #' @slot family The family of the model.
 #' @slot cp_set The set of change points.
 #' @slot cost_values The cost function values for each segment.
-#' @slot residuals The residuals for each segment. Used only for built-in
-#'   families.
+#' @slot residuals The residuals of the model with change points.
+#'   Used only for built-in families.
 #' @slot thetas The estimated parameters for each segment. Used only for
 #'   built-in families.
 #' @slot cp_only A boolean indicating whether `fastcpd` was run to return
@@ -37,9 +37,14 @@ setClass(
 #' @method plot fastcpd
 #' @rdname plot
 #' @export
-plot.fastcpd <- function(x, ...) {
+plot.fastcpd <- function(x, ...) {  # nolint: cyclomatic complexity
   # Plot the built in families only.
-  stopifnot(x@family != "custom")
+  stopifnot(
+    "Built-in plot only works for built-in families." = x@family != "custom"
+  )
+  if (x@family == "mean" && ncol(x@data) > 1) {
+    stop("Can not plot mean change points with p > 1.")
+  }
   if (!require_namespace("ggplot2")) {
     if (utils_menu() == 1) {
       tryCatch(
@@ -49,7 +54,7 @@ plot.fastcpd <- function(x, ...) {
         }
       )
     } else {
-      message("ggplot2 is not installed. No plot is made.")
+      stop("ggplot2 is not installed. No plot is made.")
     }
   }
   if (require_namespace("ggplot2")) {
@@ -57,14 +62,18 @@ plot.fastcpd <- function(x, ...) {
     p <- ggplot2::ggplot() +
       ggplot2::geom_vline(xintercept = x@cp_set, color = "red")
 
-    line_or_point <-
-      if (x@family == "ar") ggplot2::geom_line else ggplot2::geom_point
+    # Draw lines for time series data and points for other data.
+    if (x@family %in% c("ar", "ma", "arma", "arima", "garch")) {
+      line_or_point <- ggplot2::geom_line
+    } else {
+      line_or_point <- ggplot2::geom_point
+    }
     p <- p + line_or_point(
       data = data.frame(x = seq_len(nrow(x@data)), y = y, label = "response"),
       ggplot2::aes(x = x, y = y)
     )
 
-    if (!(x@family %in% c("custom", "var") || x@cp_only)) {
+    if (x@family != "var" && !x@cp_only) {
       p <- p + ggplot2::geom_point(
         data = data.frame(
           x = seq_len(nrow(x@data)),

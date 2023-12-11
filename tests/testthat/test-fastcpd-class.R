@@ -18,13 +18,13 @@ testthat::test_that(
       cp_only = FALSE
     )
 
-    testthat::expect_message(
+    testthat::expect_error(
       mockthat::with_mock(
         `require_namespace` = function(...) FALSE,
         `utils_menu` = function(...) 2,
         plot(class_instance)
       ),
-      "ggplot2 is not installed. No plot is made.\n"
+      "ggplot2 is not installed. No plot is made."
     )
 
     testthat::expect_no_error(
@@ -167,5 +167,27 @@ testthat::test_that("output methods without change points", {
       "",
       "No change points found"
     )
+  )
+})
+
+testthat::test_that("mean change p > 1", {
+  match_call <- ""
+  class(match_call) <- "language"
+
+  class_instance <- methods::new(
+    Class = "fastcpd",
+    call = match_call,
+    data = data.frame(matrix(NA, 0, 2)),
+    family = "mean",
+    cp_set = numeric(0),
+    cost_values = numeric(0),
+    residuals = numeric(0),
+    thetas = data.frame(matrix(NA, 0, 0)),
+    cp_only = FALSE
+  )
+
+  testthat::expect_error(
+    plot(class_instance),
+    "Can not plot mean change points with p > 1."
   )
 })
