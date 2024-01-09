@@ -1,6 +1,6 @@
 ## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
-  collapse = TRUE, comment = "#>", eval = TRUE, cache = TRUE,
+  collapse = TRUE, comment = "#>", eval = TRUE, cache = FALSE,
   warning = FALSE, fig.width = 8, fig.height = 5
 )
 
@@ -174,7 +174,9 @@ wbs::wbs(mean_data_1)$cpt$cpt.ic$mbic.penalty
 
 ## ----univariate-mean-change-mosum---------------------------------------------
 # Data need to be processed. `G` is selected based on the example
-mosum::mosum(c(mean_data_1), G = 40)$cpts.info$cpts
+if (interactive()) {
+  mosum::mosum(c(mean_data_1), G = 40)$cpts.info$cpts
+}
 
 ## ----univariate-mean-change-fpop----------------------------------------------
 fpop::Fpop(mean_data_1, nrow(mean_data_1))$t.est
@@ -193,13 +195,15 @@ segmented::segmented(
 
 ## ----univariate-mean-change-mcp-----------------------------------------------
 # Slowest
-# plot(
-#   mcp::mcp(
-#     list(y ~ 1, ~ 1, ~ 1),
-#     data = data.frame(y = mean_data_1, x = seq_len(nrow(mean_data_1))),
-#     par_x = "x"
-#   )
-# )
+if (interactive()) {
+  plot(
+    mcp::mcp(
+      list(y ~ 1, ~ 1, ~ 1),
+      data = data.frame(y = mean_data_1, x = seq_len(nrow(mean_data_1))),
+      par_x = "x"
+    )
+  )
+}
 
 ## ----univariate-mean-change-not-----------------------------------------------
 plot(not::not(mean_data_1, contrast = "pcwsConstMean"))
@@ -218,15 +222,20 @@ ecp::e.divisive(mv_data_1)$estimates
 # Data need to be processed
 changepoint::cpt.meanvar(c(mv_data_1))@cpts
 
+## ----univariate-mean-and-or-variance-change-cpm-------------------------------
+cpm::processStream(mv_data_1, cpmType = "GLR")$changePoints
+
 ## ----univariate-mean-and-or-variance-change-mcp-------------------------------
 # Slower
-# plot(
-#   mcp::mcp(
-#     list(y ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1),
-#     data = data.frame(y = mv_data_1, x = seq_len(nrow(mv_data_1))),
-#     par_x = "x"
-#   )
-# )
+if (interactive()) {
+  plot(
+    mcp::mcp(
+      list(y ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1),
+      data = data.frame(y = mv_data_1, x = seq_len(nrow(mv_data_1))),
+      par_x = "x"
+    )
+  )
+}
 
 ## ----univariate-mean-and-or-variance-change-not-------------------------------
 plot(not::not(mv_data_1, contrast = "pcwsConstMeanVar"))
@@ -302,13 +311,15 @@ segmented::segmented(
 
 ## ----ar3-mcp------------------------------------------------------------------
 # Slow
-# plot(
-#   mcp::mcp(
-#     list(y ~ 1 + ar(3), ~ 0 + ar(3)),
-#     data = data.frame(y = ar_data, x = seq_along(ar_data)),
-#     par_x = "x"
-#   )
-# )
+if (interactive()) {
+  plot(
+    mcp::mcp(
+      list(y ~ 1 + ar(3), ~ 0 + ar(3)),
+      data = data.frame(y = ar_data, x = seq_along(ar_data)),
+      par_x = "x"
+    )
+  )
+}
 
 ## ----garch11-fastcpd----------------------------------------------------------
 fastcpd::fastcpd.garch(garch_data, c(1, 1), r.progress = FALSE)@cp_set
