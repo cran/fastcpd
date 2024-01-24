@@ -2,6 +2,13 @@
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(fastcpd)
 
+## ----package_installation-----------------------------------------------------
+for (package in c("ggplot2", "mvtnorm")) {
+  if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
+    package, repos = "https://cloud.r-project.org", quiet = TRUE
+  )
+}
+
 ## ----lasso_setup--------------------------------------------------------------
 set.seed(1)
 n <- 1500

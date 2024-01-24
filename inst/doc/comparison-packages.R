@@ -4,6 +4,20 @@ knitr::opts_chunk$set(
   warning = FALSE, fig.width = 8, fig.height = 5
 )
 
+## ----package_installation-----------------------------------------------------
+for (
+  package in c(
+    "ggplot2", "mvtnorm",
+    # "bcp",
+    "breakfast", "changepoint", "cpm", "ecp", "fpop", "mcp",
+    "mosum", "not", "segmented", "stepR", "strucchange", "wbs"
+  )
+) {
+  if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
+    package, repos = "https://cloud.r-project.org", quiet = TRUE
+  )
+}
+
 ## ----data-setup-univariate-mean-change----------------------------------------
 set.seed(1)
 p <- 1
@@ -209,7 +223,7 @@ if (interactive()) {
 plot(not::not(mean_data_1, contrast = "pcwsConstMean"))
 
 ## ----univariate-mean-change-bcp-----------------------------------------------
-plot(bcp::bcp(mean_data_1))
+# plot(bcp::bcp(mean_data_1))
 
 ## ----univariate-mean-and-or-variance-change-fastcpd---------------------------
 fastcpd::fastcpd.mv(mv_data_1, r.progress = FALSE)@cp_set
@@ -254,7 +268,7 @@ strucchange::breakpoints(
 ecp::e.divisive(mean_data_3)$estimates
 
 ## ----multivariate-mean-change-bcp---------------------------------------------
-plot(bcp::bcp(mean_data_3))
+# plot(bcp::bcp(mean_data_3))
 
 ## ----multivariate-mean-and-or-variance-change-fastcpd-------------------------
 fastcpd::fastcpd.mv(mv_data_3, r.progress = FALSE)@cp_set
