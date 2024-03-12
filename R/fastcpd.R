@@ -3,7 +3,10 @@
 #' @description \code{fastcpd} takes in formulas, data, families and extra
 #' parameters and returns a \code{fastcpd} object.
 #'
-#' @example tests/testthat/examples/fastcpd.txt
+#' @example tests/testthat/examples/fastcpd_1.R
+#' @example tests/testthat/examples/fastcpd_2.R
+#' @example tests/testthat/examples/fastcpd_3.txt
+#' @example tests/testthat/examples/fastcpd_4.R
 #'
 #' @md
 #' @section Gallery:
@@ -36,45 +39,20 @@
 #'   covariates. The response is not necessary in the case of mean change or
 #'   variance change, in which case the formula will need to be adjusted
 #'   accordingly.
-#' @param beta Initial cost value specified in the algorithm in the paper.
-#'   For the proper choice of a value, please refer to the paper. If not
-#'   specified, BIC criterion is used to obtain a proper value, i.e.,
-#'   \code{beta = (p + 1) * log(nrow(data)) / 2}.
-#' @param segment_count Number of segments for initial guess. If not specified,
-#'   the initial guess on the number of segments is 10.
-#' @param trim Trimming for the boundary change points so that a change point
-#'   close to the boundary will not be counted as a change point. This
-#'   parameter also specifies the minimum distance between two change points.
-#'   If.   several change points have mutual distances smaller than
-#'   \code{trim * nrow(data)}, those change points will be merged into one
-#'   single change point. The value of this parameter should be between
-#'   0 and 1.
-#' @param momentum_coef Momentum coefficient to be applied to each update. This
-#'   parameter is used when the loss function is bad-shaped so that
-#'   maintaining a momentum from previous update is desired. Default value is
-#'   0, meaning the algorithm doesn't maintain a momentum by default.
-#' @param k Function on number of epochs in SGD. \code{k} should be a function
-#'   taking only a parameter \code{x} meaning the current number of data
-#'   points considered since last segmentaion. The return value of the
-#'   function should be an integer indicating how many epochs should be
-#'   performed apart from the default update. By default the function returns
-#'   0, meaning no multiple epochs will be used to update the parameters.
-#'   Example usage:
-#'   ```r
-#'     k = function(x) {
-#'       if (x < n / segment_count / 4 * 1) 3
-#'       else if (x < n / segment_count / 4 * 2) 2
-#'       else if (x < n / segment_count / 4 * 3) 1
-#'       else 0
-#'     }
-#'   ```
-#'   This function will perform 3 epochs for the first quarter of the data, 2
-#'   epochs for the second quarter of the data, 1 epoch for the third quarter
-#'   of the data and no multiple epochs for the last quarter of the data.
-#'   Experiments show that performing multiple epochs will significantly
-#'   affect the performance of the algorithm. This parameter is left for the
-#'   users to tune the performance of the algorithm if the result is not
-#'   ideal. Details are discussed in the paper.
+#' @param beta Penalty criterion for the number of change points.
+#'   Take a string value of \code{"MBIC"}, \code{"BIC"}, \code{"MDL"}
+#'   or a numeric value. If a numeric value is provided, the value will be
+#'   used as the penalty criterion for the number of change points in the
+#'   traditional Bayesian Information Criterion. By default, Modified BIC
+#'   criterion is used to obtain a proper value, i.e.,
+#'   \code{beta = (p + 2) * log(nrow(data)) / 2} with adjusted cost
+#'   function.
+#' @param cost_adjustment Cost adjustment criterion for the number of change
+#'   points. Can be \code{"BIC"}, \code{"MBIC"}, \code{"MDL"} or NULL.
+#'   By default, the cost adjustment criterion is set to be \code{"MBIC"}.
+#'   MBIC and MDL modifies the cost function by adding a small negative
+#'   term to the cost function. MDL then transforms the cost function to
+#'   log2 based. BIC or NULL does not modify the cost function.
 #' @param family Family of the model. Can be \code{"lm"}, \code{"binomial"},
 #'   \code{"poisson"}, \code{"lasso"}, \code{"custom"}, \code{"ar"},
 #'   \code{"var"}, \code{"ma"}, \code{"arima"}, \code{"garch"} or
@@ -83,19 +61,6 @@
 #'   parameter is the same as specifying the parameter to be \code{"custom"}
 #'   or \code{NULL}, in which case, users must specify the cost function, with
 #'   optional gradient and corresponding Hessian matrix functions.
-#' @param epsilon Epsilon to avoid numerical issues. Only used for the Hessian
-#'   computation in Logistic Regression and Poisson Regression.
-#' @param min_prob Minimum probability to avoid numerical issues. Only used
-#'   for Poisson Regression.
-#' @param winsorise_minval Minimum value for the parameter in Poisson Regression
-#'   to be winsorised.
-#' @param winsorise_maxval Maximum value for the parameter in Poisson Regression
-#'   to be winsorised.
-#' @param p Number of covariates in the model. If not specified, the number of
-#'   covariates will be inferred from the data, i.e.,
-#'   \code{p = ncol(data) - 1}. This parameter is superseded by `order` in the
-#'   case of time series models: "ar", "var", "arima".
-#' @param order Order of the AR(p), VAR(p) or ARIMA(p, d, q) model.
 #' @param cost Cost function to be used. This and the following two parameters
 #'   should not be specified at the same time with \code{family}. If not
 #'   specified, the default is the negative log-likelihood for the
@@ -133,6 +98,61 @@
 #'   second one being the estimated parameters. The Hessian function should
 #'   return the Hessian matrix of the cost function with respect to the data
 #'   and parameters.
+#' @param line_search If a vector of numeric values are provided, line
+#'   search will be performed to find the optimal step size for each update.
+#' @param lower Lower bound for the parameters. Used to specify the
+#'   domain of the parameter after each gradient descent step. If not specified,
+#'   the lower bound will be set to be \code{-Inf} for all parameters.
+#' @param upper Upper bound for the parameters. Used to specify the
+#'   domain of the parameter after each gradient descent step. If not specified,
+#'   the upper bound will be set to be \code{Inf} for all parameters.
+#' @param segment_count Number of segments for initial guess. If not specified,
+#'   the initial guess on the number of segments is 10.
+#' @param trim Trimming for the boundary change points so that a change point
+#'   close to the boundary will not be counted as a change point. This
+#'   parameter also specifies the minimum distance between two change points.
+#'   If.   several change points have mutual distances smaller than
+#'   \code{trim * nrow(data)}, those change points will be merged into one
+#'   single change point. The value of this parameter should be between
+#'   0 and 1.
+#' @param momentum_coef Momentum coefficient to be applied to each update. This
+#'   parameter is used when the loss function is bad-shaped so that
+#'   maintaining a momentum from previous update is desired. Default value is
+#'   0, meaning the algorithm doesn't maintain a momentum by default.
+#' @param multiple_epochs Function on number of epochs in SGD.
+#'   \code{multiple_epochs} should be a function taking only a parameter
+#'   \code{segment_length} meaning the current number of data
+#'   points considered since last segmentaion. The return value of the
+#'   function should be an integer indicating how many epochs should be
+#'   performed apart from the default update. By default the function returns
+#'   0, meaning no multiple epochs will be used to update the parameters.
+#'   Example usage:
+#'   ```r
+#'     multiple_epochs = function(segment_length) {
+#'       if (segment_length < n / segment_count / 4 * 1) 3
+#'       else if (segment_length < n / segment_count / 4 * 2) 2
+#'       else if (segment_length < n / segment_count / 4 * 3) 1
+#'       else 0
+#'     }
+#'   ```
+#'   This function will perform 3 epochs for the first quarter of the data, 2
+#'   epochs for the second quarter of the data, 1 epoch for the third quarter
+#'   of the data and no multiple epochs for the last quarter of the data.
+#'   Experiments show that performing multiple epochs will significantly
+#'   affect the performance of the algorithm. This parameter is left for the
+#'   users to tune the performance of the algorithm if the result is not
+#'   ideal. Details are discussed in the paper.
+#' @param epsilon Epsilon to avoid numerical issues. Only used for the Hessian
+#'   computation in Logistic Regression and Poisson Regression.
+#' @param order Order of the AR(p), VAR(p) or ARIMA(p, d, q) model.
+#' @param p Number of covariates in the model. If not specified, the number of
+#'   covariates will be inferred from the data, i.e.,
+#'   \code{p = ncol(data) - 1}. This parameter is superseded by `order` in the
+#'   case of time series models: "ar", "var", "arima".
+#' @param pruning If \code{TRUE}, the algorithm will perform pruning on the
+#'   change points. By default, the value is set to be \code{TRUE}. Pruning
+#'   should be set to be \code{FALSE} if the pruning condition is not
+#'   satisfied.
 #' @param cp_only If \code{TRUE}, only the change points are returned.
 #'   Otherwise, the cost function values together with the estimated
 #'   parameters for each segment are also returned. By default the value is
@@ -158,19 +178,13 @@
 #' @param warm_start If \code{TRUE}, the algorithm will use the estimated
 #'   parameters from the previous segment as the initial value for the
 #'   current segment. This parameter is only used for \code{"glm"} families.
-#' @param lower Lower bound for the parameters. Used to specify the
-#'   domain of the parameter after each gradient descent step. If not specified,
-#'   the lower bound will be set to be \code{-Inf} for all parameters.
-#' @param upper Upper bound for the parameters. Used to specify the
-#'   domain of the parameter after each gradient descent step. If not specified,
-#'   the upper bound will be set to be \code{Inf} for all parameters.
-#' @param line_search If a vector of numeric values are provided, line
-#'   search will be performed to find the optimal step size for each update.
-#' @param ... Parameters specifically used for time series models. As of
-#'   the current implementation, only \code{include.mean} will not be ignored
-#'   and used in the ARIMA or GARCH model. \code{r.progress} now will not be
-#'   ignored and used to control the progress bar. By default the progress bar
-#'   will be shown and to disable it, set \code{r.progress = FALSE}.
+#' @param ... Parameters specifically used for time series models. The following
+#'   parameters will not be ignored:
+#'
+#'   - \code{include.mean} is used for ARIMA and GARCH modes.
+#'   - \code{r.progress} is used to control the progress bar. By default the
+#'     progress bar will be shown. To disable it, set \code{r.progress = FALSE}.
+#'   - \code{p.response} is used to specify the number of response variables.
 #'
 #' @return A class \code{fastcpd} object.
 #'
@@ -183,47 +197,49 @@
 fastcpd <- function(  # nolint: cyclomatic complexity
   formula = y ~ . - 1,
   data,
-  beta = NULL,
-  segment_count = 10,
-  trim = 0.025,
-  momentum_coef = 0,
-  k = function(x) 0,
+  beta = "MBIC",
+  cost_adjustment = "MBIC",
   family = NULL,
-  epsilon = 1e-10,
-  min_prob = 10^10,
-  winsorise_minval = -20,
-  winsorise_maxval = 20,
-  p = ncol(data) - 1,
-  order = c(0, 0, 0),
   cost = NULL,
   cost_gradient = NULL,
   cost_hessian = NULL,
+  line_search = c(1),
+  lower = rep(-Inf, p),
+  upper = rep(Inf, p),
+  segment_count = 10,
+  trim = 0.02,
+  momentum_coef = 0,
+  multiple_epochs = function(x) 0,
+  epsilon = 1e-10,
+  order = c(0, 0, 0),
+  p = ncol(data) - 1,
+  pruning = TRUE,
   cp_only = FALSE,
   vanilla_percentage = 0,
   warm_start = FALSE,
-  lower = NULL,
-  upper = NULL,
-  line_search = c(1),
   ...
 ) {
+  # Check the validity of the `family` parameter.
   family <- ifelse(is.null(family), "custom", tolower(family))
-
-  # Vanilla is not a `fastcpd` family and can not be set manually by the user.
-  # `vanilla` is used to distinguish the cost function parameters in the
-  # implementation.
   stopifnot(
     check_family(
       family,
       c(
-        "lm", "binomial", "poisson", "lasso", "mlasso",
-        "mean", "variance", "meanvariance", "mv",
-        "arma", "ar", "var", "ma", "arima", "garch",
+        "lm", "binomial", "poisson", "lasso", "mlasso", "mean", "variance",
+        "meanvariance", "mv", "arma", "ar", "var", "ma", "arima", "garch",
         "custom"
       )
     )
   )
 
+  # Check the validity of the `cost` parameter.
   stopifnot(check_cost(cost, cost_gradient, cost_hessian, family))
+
+  # Check the validity of the `cost_adjustment` parameter.
+  if (is.null(cost_adjustment)) {
+    cost_adjustment <- "BIC"
+  }
+  stopifnot(cost_adjustment %in% c("BIC", "MBIC", "MDL"))
 
   # The following code is adapted from the `lm` function from base R.
   match_formula <- match.call(expand.dots = FALSE)
@@ -232,77 +248,49 @@ fastcpd <- function(  # nolint: cyclomatic complexity
   match_formula$drop.unused.levels <- TRUE
   match_formula[[1L]] <- quote(stats::model.frame)
   match_formula <- eval(match_formula, parent.frame())
-  y <- stats::model.response(match_formula, "any")
+  y <- stats::model.response(match_formula, "numeric")
   data_ <- cbind(y, stats::model.matrix(formula, data = data))
 
-  p_response <- if (family == "mlasso") ncol(y) else 1
-
-  fastcpd_family <- NULL
-
-  # If a cost function provided has an explicit solution, i.e. does not depend
-  # on the parameters, e.g., mean change, then the percentage of vanilla PELT
-  # is set to be 1.
-  if (!is.null(cost) && length(formals(cost)) == 1) {
-    family <- "custom"
-    vanilla_percentage <- 1
+  # Check the parameters passed in the ellipsis.
+  include_mean <- TRUE
+  p_response <- get_p_response(family, y, data)
+  r_progress <- TRUE
+  if (methods::hasArg("include.mean")) {
+    include_mean <- eval.parent(match.call()[["include.mean"]])
+  }
+  if (methods::hasArg("p.response")) {
+    p_response <- eval.parent(match.call()[["p.response"]])
+  }
+  if (methods::hasArg("r.progress")) {
+    r_progress <- eval.parent(match.call()[["r.progress"]])
   }
 
-  if (family == "mean") {
-    vanilla_percentage <- 1
-    p <- ncol(data_)
-    block_size <- max(floor(sqrt(nrow(data_)) / (segment_count + 1)), 2)
-    block_count <- floor(nrow(data_) / block_size)
-    data_all_covs <- array(NA, dim = c(block_count, p, p))
-    for (block_index in seq_len(block_count)) {
-      block_start <- (block_index - 1) * block_size + 1
-      block_end <- if (block_index < block_count) {
-        block_index * block_size
-      } else {
-        nrow(data_)
-      }
-      data_all_covs[block_index, , ] <-
-        stats::cov(data_[block_start:block_end, , drop = FALSE])
-    }
-    mean_data_cov <- colMeans(data_all_covs)
-  } else {
-    mean_data_cov <- diag(1)
-  }
+  p <- get_p(data_, family, p_response, order, include_mean)
 
-  if (family == "variance") {
-    vanilla_percentage <- 1
-    p <- ncol(data_)^2
-  }
-
-  if (family == "meanvariance" || family == "mv") {
-    vanilla_percentage <- 1
-    p <- ncol(data_) + ncol(data_)^2
-  }
-
-  # Pre-process the data for the time series models.
   if (family == "ar") {
-    # Check the validity of the parameters for AR(p) model.
     stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
     stopifnot(check_ar_order(order))
-
-    if (length(order) == 3) {
-      family <- "arima"
-    } else {
-      # Preprocess the data for AR(p) model to be used in linear regression.
-      p <- order
-      fastcpd_family <- "gaussian"
-      y <- data_[p + seq_len(nrow(data_) - p), ]
-      x <- matrix(NA, nrow(data_) - p, p)
-      for (p_i in seq_len(p)) {
-        x[, p_i] <- data_[(p - p_i) + seq_len(nrow(data_) - p), ]
-      }
-      data_ <- cbind(y, x)
-    }
   } else if (family == "var") {
     stopifnot(check_var_order(order))
-    fastcpd_family <- "custom"
+  } else if (family == "ma") {
+    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
+    stopifnot(check_ma_order(order))
+  } else if (family == "garch") {
+    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
+    stopifnot(check_garch_order(order))
+  } else if (family == "arima") {
+    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
+    stopifnot(check_arima_order(order))
+  }
 
-    # Preprocess the data for VAR(p) model to be used in linear regression.
-    vanilla_percentage <- 1
+  if (family == "ar") {
+    y <- data_[p + seq_len(nrow(data_) - p), ]
+    x <- matrix(NA, nrow(data_) - p, p)
+    for (p_i in seq_len(p)) {
+      x[, p_i] <- data_[(p - p_i) + seq_len(nrow(data_) - p), ]
+    }
+    data_ <- cbind(y, x)
+  } else if (family == "var") {
     y <- data_[order + seq_len(nrow(data_) - order), ]
     x <- matrix(NA, nrow(data_) - order, order * ncol(data_))
     for (p_i in seq_len(order)) {
@@ -310,43 +298,20 @@ fastcpd <- function(  # nolint: cyclomatic complexity
         data_[(order - p_i) + seq_len(nrow(data_) - order), ]
     }
     data_ <- cbind(y, x)
-    lm_x_col <- order * ncol(data)
-    cost <- function(data) {
-      x <- data[, (ncol(data) - lm_x_col + 1):ncol(data)]
-      y <- data[, 1:(ncol(data) - lm_x_col)]
-
-      if (nrow(data) <= lm_x_col + 1) {
-        x_t_x <- diag(lm_x_col)
-      } else {
-        x_t_x <- crossprod(x)
-      }
-
-      # TODO(doccstat): Verify the correctness of the cost function for VAR(p).
-      norm(y - x %*% solve(x_t_x, t(x)) %*% y, type = "F")^2 / 2
-    }
-    p <- order^2 * ncol(data_)
   } else if (family == "ma") {
-    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
-    stopifnot(check_ma_order(order))
+    # TODO(doccstat): Deprecate MA model.
     family <- "arima"
     order <- c(rep(0, 3 - length(order)), order)
-  }
-
-  if (family == "arma") {
-    p <- sum(order) + 1
+  } else if (family == "garch") {
+    cost <- function(data) {
+      tryCatch(
+        expr = tseries::garch(data, order, trace = FALSE)$n.likeli,
+        error = function(e) 0
+      )
+    }
   }
 
   if (family == "arima") {
-    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
-    stopifnot(check_arima_order(order))
-    fastcpd_family <- "custom"
-    vanilla_percentage <- 1
-
-    # By default in time series models, `include.mean` is set to be `TRUE`.
-    include_mean <- TRUE
-    if (methods::hasArg("include.mean")) {
-      include_mean <- eval.parent(match.call()[["include.mean"]])
-    }
     cost <- function(data) {
       tryCatch(
         expr = -forecast::Arima(
@@ -355,116 +320,19 @@ fastcpd <- function(  # nolint: cyclomatic complexity
         error = function(e) 0
       )
     }
-    p <- sum(order[-2]) + 1 + include_mean
-  } else if (family == "garch") {
-    stopifnot("Data should be a univariate time series." = ncol(data_) == 1)
-    stopifnot(check_garch_order(order))
-    fastcpd_family <- "custom"
-    vanilla_percentage <- 1
-
-    cost <- function(data) {
-      tryCatch(
-        expr = tseries::garch(data, order, trace = FALSE)$n.likeli,
-        error = function(e) 0
-      )
-    }
-    p <- 1 + sum(order)
   }
 
-  if (family == "lm") {
-    fastcpd_family <- "gaussian"
-  }
-
-  if (family == "mlasso") {
-    fastcpd_family <- "mgaussian"
-  }
-
-  if (is.null(fastcpd_family)) {
-    fastcpd_family <- family
-  }
-
-  if (is.null(beta)) {
-    if (nrow(data_) < 500) {
-      # Use the `beta` value obtained from BIC.
-      beta <- (p + 1) * log(nrow(data_)) / 2
-    } else {
-      # Use the `beta` value obtained from Modified BIC.
-      beta <- (p + 2) * log(nrow(data_)) / 2
-    }
-
-    # TODO(doccstat): Variance estimation for VAR(p).
-    # For linear regression models, an estimate of the variance is needed in the
-    # cost function. The variance estimation is only for "lm" family with no
-    # `beta` provided. Only estimate the variance for Gaussian family when
-    # `beta` is null.
-    if (family == "lm" || fastcpd_family == "gaussian") {
-      # Estimate the variance for each block and then take the average.
-      n <- nrow(data_)
-      block_size <- p + 1
-      variance_estimation <- rep(NA, n - block_size)
-      for (i in seq_len(n - block_size)) {
-        block_index <- seq_len(block_size) + i - 1
-        block_index_lagged <- seq_len(block_size) + i
-
-        y_block <- data_[block_index, 1]
-        x_block <- data_[block_index, -1, drop = FALSE]
-
-        y_block_lagged <- data_[block_index_lagged, 1]
-        x_block_lagged <- data_[block_index_lagged, -1, drop = FALSE]
-
-        x_t_x <- crossprod(x_block)
-        x_t_x_lagged <- crossprod(x_block_lagged)
-
-        tryCatch(
-          expr = {
-            block_slope <-
-              solve(crossprod(x_block), crossprod(x_block, y_block))
-            block_lagged_slope <- solve(
-              crossprod(x_block_lagged),
-              crossprod(x_block_lagged, y_block_lagged)
-            )
-            x_t_x_inv <- solve(x_t_x)
-            x_t_x_inv_lagged <- solve(x_t_x_lagged)
-            inv_product <- x_t_x_inv %*% x_t_x_inv_lagged
-            cross_term_x <- crossprod(
-              x_block[-1, , drop = FALSE],
-              x_block_lagged[-block_size, , drop = FALSE]
-            )
-            cross_term <- inv_product %*% cross_term_x
-            delta_numerator <- crossprod(block_slope - block_lagged_slope)
-            delta_denominator <-
-              sum(diag(x_t_x_inv + x_t_x_inv_lagged - 2 * cross_term))
-            variance_estimation[i] <- delta_numerator / delta_denominator
-          },
-          error = function(e) {
-            variance_estimation[i] <- NA
-            message("Variance estimation failed for block ", i, ".")
-          }
-        )
-      }
-
-      beta <- beta * mean(variance_estimation, na.rm = TRUE)
-    }
-  }
-
-  if (is.null(lower)) {
-    lower <- rep(-Inf, p)
-  }
-
-  if (is.null(upper)) {
-    upper <- rep(Inf, p)
-  }
-
-  r_progress <- TRUE
-  if (methods::hasArg("r.progress")) {
-    r_progress <- eval.parent(match.call()[["r.progress"]])
-  }
+  fastcpd_family <- get_fastcpd_family(family, p_response)
+  sigma_ <- get_variance_estimation(data_, family, p_response)
+  vanilla_percentage <-
+    get_vanilla_percentage(vanilla_percentage, cost, fastcpd_family)
+  beta <- get_beta(beta, p, nrow(data_), fastcpd_family, sigma_)
 
   result <- fastcpd_impl(
-    data_, beta, segment_count, trim, momentum_coef, k, fastcpd_family,
-    epsilon, min_prob, winsorise_minval, winsorise_maxval, p, order,
-    cost, cost_gradient, cost_hessian, cp_only, vanilla_percentage, warm_start,
-    lower, upper, line_search, mean_data_cov, p_response, r_progress
+    data_, beta, cost_adjustment, segment_count, trim, momentum_coef,
+    multiple_epochs, fastcpd_family, epsilon, p, pruning, order, cost,
+    cost_gradient, cost_hessian, cp_only, vanilla_percentage, warm_start, lower,
+    upper, line_search, sigma_, p_response, r_progress
   )
 
   raw_cp_set <- c(result$raw_cp_set)
@@ -539,46 +407,6 @@ fastcpd <- function(  # nolint: cyclomatic complexity
     )
   }
 
-  if (
-    length(raw_cp_set) > nrow(data) / (p + 1) &&
-      (all(raw_residuals == 0) || stats::t.test(raw_residuals)$p.value < 0.05)
-  ) {
-    message(
-      "Warning: The number of change points is larger than the number of ",
-      "observations divided by the number of covariates plus one. ",
-      "The residuals are not independent. ",
-      "Retrying with a larger `beta` value (x2)."
-    )
-    return(
-      fastcpd(
-        formula = formula,
-        data = data,
-        beta = beta * 2,
-        segment_count = segment_count,
-        trim = trim,
-        momentum_coef = momentum_coef,
-        k = k,
-        family = family,
-        epsilon = epsilon,
-        min_prob = min_prob,
-        winsorise_minval = winsorise_minval,
-        winsorise_maxval = winsorise_maxval,
-        p = p,
-        order = order,
-        cost = cost,
-        cost_gradient = cost_gradient,
-        cost_hessian = cost_hessian,
-        cp_only = cp_only,
-        vanilla_percentage = vanilla_percentage,
-        warm_start = warm_start,
-        lower = lower,
-        upper = upper,
-        line_search = line_search,
-        ...
-      )
-    )
-  }
-
   residuals <- c(result$residual)
 
   if (family == "mean" && p == 1) {
@@ -630,6 +458,7 @@ fastcpd <- function(  # nolint: cyclomatic complexity
     Class = "fastcpd",
     call = match.call(),
     data = data.frame(data),
+    order = order,
     family = family,
     cp_set = cp_set,
     cost_values = c(result$cost_values),

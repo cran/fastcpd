@@ -153,7 +153,9 @@ testthat::test_that(
     result <- fastcpd(
       formula = y ~ . - 1,
       data = data.frame(y = seq_len(100), x = seq_len(100)),
-      family = "lm"
+      family = "lm",
+      beta = "BIC",
+      cost_adjustment = "BIC"
     )
 
     testthat::expect_length(result@cp_set, 0)
@@ -307,6 +309,15 @@ testthat::test_that(
         order = c(0, 0)
       ),
       "The order should have at least one non-zero element for GARCH family."
+    )
+  }
+)
+
+testthat::test_that(
+  "get_beta", {
+    testthat::expect_error(
+      get_beta("AIC", 0, 0, "", matrix(0, 0, 0)),
+      "Invalid beta selection criterion provided."
     )
   }
 )

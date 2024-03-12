@@ -376,20 +376,20 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;     family = &quot;lasso&quot;, r.progress = FALSE)</span></span>
 <span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; Change points:</span></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; 79 202 325 </span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; 79 200 325 </span></span>
 <span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; Cost values:</span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; 185.7631 508.1195 337.1486 328.3755 </span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; 304.9901 332.8808 468.1191 470.8976 </span></span>
 <span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
 <span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; 50 x 4 sparse Matrix of class &quot;dgCMatrix&quot;</span></span>
 <span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;       segment 1  segment 2 segment 3 segment 4</span></span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;  [1,] -1.815974 -1.5964536  3.838563 -2.399833</span></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt;  [2,] -1.692328 -1.2734980  3.287314  2.170296</span></span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;  [3,] -3.340743  0.8558482  4.075844  2.853726</span></span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;  [4,] -4.075669  .          1.788200 -2.534484</span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;  [5,] -3.972095  .          3.868924  2.308333</span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt;  [6,] -3.203743 -1.6359700  2.388598  3.302757</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;  [1,] -1.794342 -1.7863922  3.828320 -2.384733</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt;  [2,] -1.669612 -1.5520762  3.289372  2.148898</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;  [3,] -3.315550  0.6151654  4.081897  2.832707</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;  [4,] -4.056087  .          1.797223 -2.517172</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;  [5,] -3.952455  .          3.862429  2.286681</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt;  [6,] -3.183277 -1.7592907  2.379079  3.277910</span></span>
 <span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt;  [7,]  .         .          .         .       </span></span>
 <span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt;  [8,]  .         .          .         .       </span></span>
 <span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;  [9,]  .         .          .         .       </span></span>
@@ -440,74 +440,75 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="at">formula =</span> y <span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>,</span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">y =</span> y, <span class="at">x =</span> x),</span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">&quot;lasso&quot;</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">k =</span> <span class="cf">function</span>(x) <span class="cf">if</span> (x <span class="sc">&lt;</span> <span class="dv">20</span>) <span class="dv">1</span> <span class="cf">else</span> <span class="dv">0</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">multiple_epochs =</span> <span class="cf">function</span>(segment_length) <span class="cf">if</span> (segment_length <span class="sc">&lt;</span> <span class="dv">20</span>) <span class="dv">1</span> <span class="cf">else</span> <span class="dv">0</span>,</span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)</span>
 <span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="fu">summary</span>(result_multiple_epochs)</span>
 <span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
 <span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; fastcpd(formula = y ~ . - 1, data = data.frame(y = y, x = x), </span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;     k = function(x) if (x &lt; 20) 1 else 0, family = &quot;lasso&quot;, r.progress = FALSE)</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; Change points:</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; 79 200 320 </span></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; Cost values:</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; 3511.248 1248.405 5457.215 5298.905 </span></span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; 50 x 4 sparse Matrix of class &quot;dgCMatrix&quot;</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;       segment 1 segment 2 segment 3 segment 4</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;  [1,]         .         .         .         .</span></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;  [2,]         .         .         .         .</span></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt;  [3,]         .         .         .         .</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;  [4,]         .         .         .         .</span></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt;  [5,]         .         .         .         .</span></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;  [6,]         .         .         .         .</span></span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt;  [7,]         .         .         .         .</span></span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt;  [8,]         .         .         .         .</span></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt;  [9,]         .         .         .         .</span></span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; [10,]         .         .         .         .</span></span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; [11,]         .         .         .         .</span></span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; [12,]         .         .         .         .</span></span>
-<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; [13,]         .         .         .         .</span></span>
-<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; [14,]         .         .         .         .</span></span>
-<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; [15,]         .         .         .         .</span></span>
-<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; [16,]         .         .         .         .</span></span>
-<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; [17,]         .         .         .         .</span></span>
-<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">#&gt; [18,]         .         .         .         .</span></span>
-<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; [19,]         .         .         .         .</span></span>
-<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">#&gt; [20,]         .         .         .         .</span></span>
-<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">#&gt; [21,]         .         .         .         .</span></span>
-<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">#&gt; [22,]         .         .         .         .</span></span>
-<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt; [23,]         .         .         .         .</span></span>
-<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt; [24,]         .         .         .         .</span></span>
-<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt; [25,]         .         .         .         .</span></span>
-<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; [26,]         .         .         .         .</span></span>
-<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="co">#&gt; [27,]         .         .         .         .</span></span>
-<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="co">#&gt; [28,]         .         .         .         .</span></span>
-<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="co">#&gt; [29,]         .         .         .         .</span></span>
-<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a><span class="co">#&gt; [30,]         .         .         .         .</span></span>
-<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt; [31,]         .         .         .         .</span></span>
-<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt; [32,]         .         .         .         .</span></span>
-<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt; [33,]         .         .         .         .</span></span>
-<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt; [34,]         .         .         .         .</span></span>
-<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt; [35,]         .         .         .         .</span></span>
-<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt; [36,]         .         .         .         .</span></span>
-<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">#&gt; [37,]         .         .         .         .</span></span>
-<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a><span class="co">#&gt; [38,]         .         .         .         .</span></span>
-<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a><span class="co">#&gt; [39,]         .         .         .         .</span></span>
-<span id="cb4-62"><a href="#cb4-62" tabindex="-1"></a><span class="co">#&gt; [40,]         .         .         .         .</span></span>
-<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a><span class="co">#&gt; [41,]         .         .         .         .</span></span>
-<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a><span class="co">#&gt; [42,]         .         .         .         .</span></span>
-<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a><span class="co">#&gt; [43,]         .         .         .         .</span></span>
-<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a><span class="co">#&gt; [44,]         .         .         .         .</span></span>
-<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a><span class="co">#&gt; [45,]         .         .         .         .</span></span>
-<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">#&gt; [46,]         .         .         .         .</span></span>
-<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a><span class="co">#&gt; [47,]         .         .         .         .</span></span>
-<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a><span class="co">#&gt; [48,]         .         .         .         .</span></span>
-<span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a><span class="co">#&gt; [49,]         .         .         .         .</span></span>
-<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="co">#&gt; [50,]         .         .         .         .</span></span></code></pre></div>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;     family = &quot;lasso&quot;, multiple_epochs = function(segment_length) if (segment_length &lt; </span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;         20) 1 else 0, r.progress = FALSE)</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; Change points:</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; 79 200 325 </span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; Cost values:</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; 297.184 325.943 456.7906 456.9829 </span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; 50 x 4 sparse Matrix of class &quot;dgCMatrix&quot;</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;       segment 1  segment 2 segment 3 segment 4</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;  [1,] -1.815974 -1.8077660  3.847431 -2.399833</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt;  [2,] -1.692328 -1.5757570  3.310427  2.170296</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;  [3,] -3.340743  0.6288282  4.100075  2.853726</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt;  [4,] -4.075669  .          1.821134 -2.534484</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;  [5,] -3.972095  .          3.885295  2.308333</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt;  [6,] -3.203743 -1.7778324  2.404614  3.302757</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt;  [7,]  .         .          .         .       </span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt;  [8,]  .         .          .         .       </span></span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt;  [9,]  .         .          .         .       </span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; [10,]  .         .          .         .       </span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; [11,]  .         .          .         .       </span></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; [12,]  .         .          .         .       </span></span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; [13,]  .         .          .         .       </span></span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; [14,]  .         .          .         .       </span></span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; [15,]  .         .          .         .       </span></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; [16,]  .         .          .         .       </span></span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">#&gt; [17,]  .         .          .         .       </span></span>
+<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; [18,]  .         .          .         .       </span></span>
+<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">#&gt; [19,]  .         .          .         .       </span></span>
+<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">#&gt; [20,]  .         .          .         .       </span></span>
+<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">#&gt; [21,]  .         .          .         .       </span></span>
+<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt; [22,]  .         .          .         .       </span></span>
+<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt; [23,]  .         .          .         .       </span></span>
+<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt; [24,]  .         .          .         .       </span></span>
+<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; [25,]  .         .          .         .       </span></span>
+<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="co">#&gt; [26,]  .         .          .         .       </span></span>
+<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="co">#&gt; [27,]  .         .          .         .       </span></span>
+<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="co">#&gt; [28,]  .         .          .         .       </span></span>
+<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a><span class="co">#&gt; [29,]  .         .          .         .       </span></span>
+<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt; [30,]  .         .          .         .       </span></span>
+<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt; [31,]  .         .          .         .       </span></span>
+<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt; [32,]  .         .          .         .       </span></span>
+<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt; [33,]  .         .          .         .       </span></span>
+<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt; [34,]  .         .          .         .       </span></span>
+<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt; [35,]  .         .          .         .       </span></span>
+<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">#&gt; [36,]  .         .          .         .       </span></span>
+<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a><span class="co">#&gt; [37,]  .         .          .         .       </span></span>
+<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a><span class="co">#&gt; [38,]  .         .          .         .       </span></span>
+<span id="cb4-62"><a href="#cb4-62" tabindex="-1"></a><span class="co">#&gt; [39,]  .         .          .         .       </span></span>
+<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a><span class="co">#&gt; [40,]  .         .          .         .       </span></span>
+<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a><span class="co">#&gt; [41,]  .         .          .         .       </span></span>
+<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a><span class="co">#&gt; [42,]  .         .          .         .       </span></span>
+<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a><span class="co">#&gt; [43,]  .         .          .         .       </span></span>
+<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a><span class="co">#&gt; [44,]  .         .          .         .       </span></span>
+<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">#&gt; [45,]  .         .          .         .       </span></span>
+<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a><span class="co">#&gt; [46,]  .         .          .         .       </span></span>
+<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a><span class="co">#&gt; [47,]  .         .          .         .       </span></span>
+<span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a><span class="co">#&gt; [48,]  .         .          .         .       </span></span>
+<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="co">#&gt; [49,]  .         .          .         .       </span></span>
+<span id="cb4-73"><a href="#cb4-73" tabindex="-1"></a><span class="co">#&gt; [50,]  .         .          .         .</span></span></code></pre></div>
 </div>
 <div id="vanilla-percentage" class="section level1">
 <h1>Vanilla percentage</h1>
@@ -525,20 +526,20 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt;     family = &quot;lasso&quot;, vanilla_percentage = 0.2, r.progress = FALSE)</span></span>
 <span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; Change points:</span></span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; 80 202 325 </span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; 79 200 325 </span></span>
 <span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt; Cost values:</span></span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; 189.9238 501.139 337.1486 328.3755 </span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; 304.9901 332.8808 468.1191 470.8976 </span></span>
 <span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
 <span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; 50 x 4 sparse Matrix of class &quot;dgCMatrix&quot;</span></span>
 <span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt;       segment 1  segment 2 segment 3 segment 4</span></span>
-<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt;  [1,] -1.841843 -1.6334187  3.838563 -2.399833</span></span>
-<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt;  [2,] -1.692516 -1.2889968  3.287314  2.170296</span></span>
-<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt;  [3,] -3.329914  0.8624382  4.075844  2.853726</span></span>
-<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt;  [4,] -4.058322  .          1.788200 -2.534484</span></span>
-<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt;  [5,] -3.958522  .          3.868924  2.308333</span></span>
-<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt;  [6,] -3.197979 -1.6349725  2.388598  3.302757</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt;  [1,] -1.794342 -1.7863922  3.828320 -2.384733</span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt;  [2,] -1.669612 -1.5520762  3.289372  2.148898</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt;  [3,] -3.315550  0.6151654  4.081897  2.832707</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt;  [4,] -4.056087  .          1.797223 -2.517172</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt;  [5,] -3.952455  .          3.862429  2.286681</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt;  [6,] -3.183277 -1.7592907  2.379079  3.277910</span></span>
 <span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt;  [7,]  .         .          .         .       </span></span>
 <span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt;  [8,]  .         .          .         .       </span></span>
 <span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co">#&gt;  [9,]  .         .          .         .       </span></span>

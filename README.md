@@ -109,6 +109,19 @@ pak::pkg_sysreqs("doccstat/fastcpd")
 </details>
 <details close>
 <summary>
+Should I install suggested packages?
+</summary>
+
+The suggested packages are not required for the main functionality of
+the package. They are only required for the vignettes. If you want to
+learn more about the package comparison and other vignettes, you could
+either check out vignettes on
+[CRAN](https://CRAN.R-project.org/package=fastcpd) or [pkgdown generated
+documentation](https://fastcpd.xingchi.li/articles/).
+
+</details>
+<details close>
+<summary>
 I countered problems related to gfortran on Mac OSX or Linux!
 </summary>
 
@@ -127,6 +140,11 @@ installing `RcppArmadillo`.
 [![fastcpd
 cheatsheet](man/figures/cheatsheets.png)](https://github.com/doccstat/fastcpd/blob/main/man/figures/cheatsheets.pdf)
 
+### R Shiny App
+
+Available soon:
+[rshiny.fastcpd.xingchi.li](https://rshiny.fastcpd.xingchi.li)
+
 ## Usage
 
 ``` r
@@ -137,7 +155,7 @@ for (i in 1:600) {
   x[i + 3] <- 0.6 * x[i + 2] - 0.2 * x[i + 1] + 0.1 * x[i] + rnorm(1, 0, 3)
 }
 for (i in 601:1000) {
-  x[i + 1] <- 0.3 * x[i + 2] + 0.4 * x[i + 1] + 0.2 * x[i] + rnorm(1, 0, 3)
+  x[i + 3] <- 0.3 * x[i + 2] + 0.4 * x[i + 1] + 0.2 * x[i] + rnorm(1, 0, 3)
 }
 result <- fastcpd::fastcpd.ar(x[3 + seq_len(n)], 3, r.progress = FALSE)
 summary(result)
@@ -146,33 +164,41 @@ summary(result)
 #> fastcpd::fastcpd.ar(data = x[3 + seq_len(n)], order = 3, r.progress = FALSE)
 #> 
 #> Change points:
-#> 612 
+#> 614 
 #> 
 #> Cost values:
-#> 2748.404 2022.597 
+#> 2757.324 2041.923 
 #> 
 #> Parameters:
-#>     segment 1   segment 2
-#> 1  0.57656238  0.13006290
-#> 2 -0.21582749 -0.03084403
-#> 3  0.07985424 -0.04544551
+#>     segment 1 segment 2
+#> 1  0.57120256 0.2371809
+#> 2 -0.20985108 0.4031244
+#> 3  0.08221978 0.2290323
 plot(result)
 ```
 
 ![](man/figures/README-ar3-1.png)<!-- -->
 
-<!-- Remove the escape in markdown file and manually split the line. -->
+<details open>
+<summary>
+Tip
+</summary>
 
-> [!TIP]
-> It is hard to demonstrate all the features of `fastcpd` in a
-> single example due to the flexibility of the package. For more
-> examples, please refer to the [function
-> reference](https://fastcpd.xingchi.li/reference/index.html).
+It is hard to demonstrate all the features of `fastcpd` in a single
+example due to the flexibility of the package. For more examples, please
+refer to the [function
+reference](https://fastcpd.xingchi.li/reference/index.html).
 
-> [!NOTE]
-> `r.progress = FALSE` is used to suppress the progress bar.
-> Users are expected to see the progress bar when running the code by
-> default.
+</details>
+<details open>
+<summary>
+Note
+</summary>
+
+`r.progress = FALSE` is used to suppress the progress bar. Users are
+expected to see the progress bar when running the code by default.
+
+</details>
 
 ## Examples
 
@@ -221,6 +247,12 @@ plot(result)
 
 ### Utility functions
 
+- Variance estimation in ARMA models:
+  [`variance_arma`](https://fastcpd.xingchi.li/reference/variance_arma.html)
+- Variance estimation in linear models:
+  [`variance_lm`](https://fastcpd.xingchi.li/reference/variance_lm.html)
+- Variance estimation in mean change models:
+  [`variance_mean`](https://fastcpd.xingchi.li/reference/variance_mean.html)
 - Plot: [`plot`](https://fastcpd.xingchi.li/reference/plot.html)
 - Print: [`print`](https://fastcpd.xingchi.li/reference/print.html)
 - Show: [`show`](https://fastcpd.xingchi.li/reference/show.html)

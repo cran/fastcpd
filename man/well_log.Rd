@@ -23,8 +23,61 @@ if (!requireNamespace("ggplot2", quietly = TRUE)) utils::install.packages(
   "ggplot2", repos = "https://cloud.r-project.org", quiet = TRUE
 )
 
-result <- fastcpd.mean(well_log, trim = 0.002)
+result <- fastcpd.mean(well_log, trim = 0.003)
 summary(result)
 plot(result)
+if (!requireNamespace("ggplot2", quietly = TRUE)) utils::install.packages(
+  "ggplot2", repos = "https://cloud.r-project.org", quiet = TRUE
+)
+
+result <- fastcpd.mean(
+  well_log, beta = (1 + 2) * log(length(well_log)) / 2 * 6, trim = 0.002
+)
+summary(result)
+plot(result)
+\donttest{
+for (package in c("ggplot2", "matrixStats")) {
+  if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
+    package, repos = "https://cloud.r-project.org", quiet = TRUE
+  )
+}
+
+sigma2 <- variance.median(well_log)
+median_loss <- function(data) {
+  sum(abs(data - matrixStats::colMedians(data))) / sqrt(sigma2) / 2
+}
+result <- fastcpd(
+  formula = ~ x - 1,
+  data = cbind.data.frame(x = well_log),
+  cost = median_loss,
+  trim = 0.002
+)
+summary(result)
+
+segment_starts <- c(1, result@cp_set)
+segment_ends <- c(result@cp_set - 1, length(well_log))
+residual <- NULL
+for (segment_index in seq_along(segment_starts)) {
+  segment <- well_log[segment_starts[segment_index]:segment_ends[segment_index]]
+  residual <- c(residual, segment - median(segment))
+}
+
+p <- ggplot2::ggplot() +
+  ggplot2::geom_vline(xintercept = result@cp_set, color = "red") +
+  ggplot2::geom_point(
+    data = data.frame(
+      x = seq_along(well_log), y = c(well_log), label = "well_log"
+    ),
+    ggplot2::aes(x = x, y = y)
+  ) +
+  ggplot2::geom_point(
+    data = data.frame(
+      x = seq_along(residual), y = residual, label = "residuals"
+    ),
+    ggplot2::aes(x = x, y = y)
+  ) +
+  ggplot2::facet_wrap("label", nrow = 2, scales = "free_y")
+print(p)
+}
 }
 \keyword{datasets}

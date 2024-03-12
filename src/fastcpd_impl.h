@@ -7,6 +7,7 @@
 //
 // @param data A data frame containing the data to be segmented.
 // @param beta Initial cost value.
+// @param cost_adjustment Adjustment for the cost function.
 // @param segment_count Number of segments for initial guess.
 // @param trim Trimming for the boundary change points.
 // @param momentum_coef Momentum coefficient to be applied to each update.
@@ -16,13 +17,8 @@
 //   and its gradient (and Hessian).
 // @param epsilon Epsilon to avoid numerical issues. Only used for binomial and
 //   poisson.
-// @param min_prob Minimum probability to avoid numerical issues. Only used for
-//   poisson.
-// @param winsorise_minval Minimum value to be winsorised. Only used for
-//   poisson.
-// @param winsorise_maxval Maximum value to be winsorised. Only used for
-//   poisson.
 // @param p Number of parameters to be estimated.
+// @param pruning Whether to prune the change points.
 // @param order Order for time series models.
 // @param cost Cost function to be used. If not specified, the default is
 //   the negative log-likelihood for the corresponding family.
@@ -41,7 +37,8 @@
 // @param lower A vector containing the lower bounds for the parameters.
 // @param upper A vector containing the upper bounds for the parameters.
 // @param line_search A vector containing the line search coefficients.
-// @param mean_data_cov Covariance matrix of the data, only used in mean change.
+// @param variance_estimate Covariance matrix of the data, only used in mean
+//   change and gaussian.
 // @param p_response Dimension of the response, used with multivariate
 //   response.
 // @param r_progress Whether to show progress bar.
@@ -52,16 +49,15 @@
 List fastcpd_impl(
     mat data,
     double beta,
+    const string cost_adjustment,
     const int segment_count,
     const double trim,
     const double momentum_coef,
-    Function k,
+    Nullable<Function> k,
     const string family,
     const double epsilon,
-    const double min_prob,
-    const double winsorise_minval,
-    const double winsorise_maxval,
     const int p,
+    const bool pruning,
     const colvec order,
     Nullable<Function> cost,
     Nullable<Function> cost_gradient,
@@ -72,7 +68,7 @@ List fastcpd_impl(
     colvec lower,
     colvec upper,
     colvec line_search,
-    const mat mean_data_cov,
+    const mat variance_estimate,
     const unsigned int p_response,
     const bool r_progress
 );

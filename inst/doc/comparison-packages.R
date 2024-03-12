@@ -9,8 +9,9 @@ for (
   package in c(
     "ggplot2", "mvtnorm",
     # "bcp",
-    "breakfast", "changepoint", "cpm", "ecp", "fpop", "mcp",
-    "mosum", "not", "segmented", "stepR", "strucchange", "wbs"
+    "breakfast", "changepoint", "cpm", "CptNonPar", "ecp", "fpop", "gfpop",
+    "InspectChangepoint", "jointseg", "mcp", "mosum", "not", "Rbeast",
+    "segmented", "stepR", "strucchange", "VARDetect", "wbs"
   )
 ) {
   if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
@@ -19,10 +20,9 @@ for (
 }
 
 ## ----data-setup-univariate-mean-change----------------------------------------
+# Univariate mean change
 set.seed(1)
 p <- 1
-
-# Univariate mean change
 mean_data_1 <- rbind(
   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(100, p)),
   mvtnorm::rmvnorm(400, mean = rep(50, p), sigma = diag(100, p)),
@@ -33,6 +33,8 @@ plot.ts(mean_data_1)
 
 ## ----data-setup-univariate-mean-and-or-variance-change------------------------
 # Univariate mean and/or variance change
+set.seed(1)
+p <- 1
 mv_data_1 <- rbind(
   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
   mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
@@ -45,9 +47,9 @@ mv_data_1 <- rbind(
 plot.ts(mv_data_1)
 
 ## ----data-setup-multivariate-mean-change--------------------------------------
-p <- 3
-
 # Multivariate mean change
+set.seed(1)
+p <- 3
 mean_data_3 <- rbind(
   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(100, p)),
   mvtnorm::rmvnorm(400, mean = rep(50, p), sigma = diag(100, p)),
@@ -58,6 +60,8 @@ plot.ts(mean_data_3)
 
 ## ----data-setup-multivariate-mean-and-or-variance-change----------------------
 # Multivariate mean and/or variance change
+set.seed(1)
+p <- 3
 mv_data_3 <- rbind(
   mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
   mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
@@ -71,6 +75,7 @@ plot.ts(mv_data_3)
 
 ## ----data-setup-linear-regression---------------------------------------------
 # Linear regression
+set.seed(1)
 n <- 300
 p <- 4
 x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
@@ -78,7 +83,7 @@ theta_0 <- rbind(c(1, 3.2, -1, 0), c(-1, -0.5, 2.5, -2), c(0.8, 0, 1, 2))
 y <- c(
   x[1:100, ] %*% theta_0[1, ] + rnorm(100, 0, 3),
   x[101:200, ] %*% theta_0[2, ] + rnorm(100, 0, 3),
-  x[201:300, ] %*% theta_0[3, ] + rnorm(100, 0, 3)
+  x[201:n, ] %*% theta_0[3, ] + rnorm(100, 0, 3)
 )
 lm_data <- data.frame(y = y, x = x)
 
@@ -86,15 +91,22 @@ plot.ts(lm_data)
 
 ## ----data-setup-logistic-regression-------------------------------------------
 # Logistic regression
-x <- matrix(rnorm(1500, 0, 1), ncol = 5)
-theta <- rbind(rnorm(5, 0, 1), rnorm(5, 2, 1))
+set.seed(1)
+n <- 500
+p <- 4
+x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
+theta <- rbind(rnorm(p, 0, 1), rnorm(p, 2, 1))
 y <- c(
-  rbinom(125, 1, 1 / (1 + exp(-x[1:125, ] %*% theta[1, ]))),
-  rbinom(175, 1, 1 / (1 + exp(-x[126:300, ] %*% theta[2, ])))
+  rbinom(300, 1, 1 / (1 + exp(-x[1:300, ] %*% theta[1, ]))),
+  rbinom(200, 1, 1 / (1 + exp(-x[301:n, ] %*% theta[2, ])))
 )
 binomial_data <- data.frame(y = y, x = x)
 
+plot.ts(binomial_data)
+
+## ----data-setup-poisson-regression--------------------------------------------
 # Poisson regression
+set.seed(1)
 n <- 1100
 p <- 3
 x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
@@ -113,6 +125,7 @@ plot.ts(poisson_data[, -1])
 
 ## ----data-setup-lasso---------------------------------------------------------
 # Lasso
+set.seed(1)
 n <- 480
 p_true <- 6
 p <- 50
@@ -136,6 +149,7 @@ plot.ts(lasso_data[, seq_len(p_true + 1)])
 
 ## ----data-setup-ar3-----------------------------------------------------------
 # AR(3)
+set.seed(1)
 n <- 1000
 x <- rep(0, n + 3)
 for (i in 1:600) {
@@ -150,6 +164,7 @@ plot.ts(ar_data)
 
 ## ----data-setup-garch11-------------------------------------------------------
 # GARCH(1, 1)
+set.seed(1)
 n <- 400
 sigma_2 <- rep(1, n + 1)
 x <- rep(0, n + 1)
@@ -165,8 +180,29 @@ garch_data <- x[-1]
 
 plot.ts(garch_data)
 
+## ----data-setup-var2----------------------------------------------------------
+# VAR(2)
+set.seed(1)
+n <- 800
+p <- 2
+theta_1 <- matrix(c(-0.3, 0.6, -0.5, 0.4, 0.2, 0.2, 0.2, -0.2), nrow = p)
+theta_2 <- matrix(c(0.3, -0.4, 0.1, -0.5, -0.5, -0.2, -0.5, 0.2), nrow = p)
+x <- matrix(0, n + 2, p)
+for (i in 1:500) {
+  x[i + 2, ] <- theta_1 %*% c(x[i + 1, ], x[i, ]) + rnorm(p, 0, 1)
+}
+for (i in 501:n) {
+  x[i + 2, ] <- theta_2 %*% c(x[i + 1, ], x[i, ]) + rnorm(p, 0, 1)
+}
+var_data <- x[-seq_len(2), ]
+
+plot.ts(var_data)
+
 ## ----univariate-mean-change-fastcpd-------------------------------------------
 fastcpd::fastcpd.mean(mean_data_1, r.progress = FALSE)@cp_set
+
+## ----univariate-mean-change-CptNonPar-----------------------------------------
+CptNonPar::np.mojo(mean_data_1, G = floor(length(mean_data_1) / 6))$cpts
 
 ## ----univariate-mean-change-strucchange---------------------------------------
 # Slow
@@ -194,6 +230,39 @@ if (interactive()) {
 
 ## ----univariate-mean-change-fpop----------------------------------------------
 fpop::Fpop(mean_data_1, nrow(mean_data_1))$t.est
+
+## ----univariate-mean-change-gfpop---------------------------------------------
+gfpop::gfpop(
+  data = mean_data_1,
+  mygraph = gfpop::graph(
+    penalty = 2 * log(nrow(mean_data_1)) * gfpop::sdDiff(mean_data_1) ^ 2,
+    type = "updown"
+  ),
+  type = "mean"
+)$changepoints
+
+## ----univariate-mean-change-InspectChangepoint--------------------------------
+invisible(
+  suppressMessages(
+    capture.output(
+      result_InspectChangepoint <- InspectChangepoint::inspect(
+        t(mean_data_1),
+        threshold = InspectChangepoint::compute.threshold(
+          nrow(mean_data_1), ncol(mean_data_1)
+        )
+      )
+    )
+  )
+)
+result_InspectChangepoint$changepoints[, "location"]
+
+## ----univariate-mean-change-jointseg------------------------------------------
+jointseg::jointSeg(mean_data_1, K = 2)$bestBkp
+
+## ----univariate-mean-change-Rbeast--------------------------------------------
+Rbeast::beast(
+  mean_data_1, season = "none", print.progress = FALSE, quiet = TRUE
+)$trend$cp
 
 ## ----univariate-mean-change-stepR---------------------------------------------
 stepR::stepFit(mean_data_1, alpha = 0.5)$rightEnd
@@ -236,8 +305,31 @@ ecp::e.divisive(mv_data_1)$estimates
 # Data need to be processed
 changepoint::cpt.meanvar(c(mv_data_1))@cpts
 
+## ----univariate-mean-and-or-variance-change-CptNonPar-------------------------
+CptNonPar::np.mojo(mv_data_1, G = floor(length(mv_data_1) / 6))$cpts
+
 ## ----univariate-mean-and-or-variance-change-cpm-------------------------------
 cpm::processStream(mv_data_1, cpmType = "GLR")$changePoints
+
+## ----univariate-mean-and-or-variance-change-InspectChangepoint----------------
+invisible(
+  suppressMessages(
+    capture.output(
+      result_InspectChangepoint <- InspectChangepoint::inspect(
+        t(mv_data_1),
+        threshold = InspectChangepoint::compute.threshold(
+          nrow(mv_data_1), ncol(mv_data_1)
+        )
+      )
+    )
+  )
+)
+result_InspectChangepoint$changepoints[, "location"]
+
+## ----univariate-mean-and-or-variance-change-Rbeast----------------------------
+Rbeast::beast(
+  mv_data_1, season = "none", print.progress = FALSE, quiet = TRUE
+)$trend$cp
 
 ## ----univariate-mean-and-or-variance-change-mcp-------------------------------
 # Slower
@@ -256,6 +348,39 @@ plot(not::not(mv_data_1, contrast = "pcwsConstMeanVar"))
 
 ## ----multivariate-mean-change-fastcpd-----------------------------------------
 fastcpd::fastcpd.mean(mean_data_3, r.progress = FALSE)@cp_set
+
+## ----multivariate-mean-change-CptNonPar---------------------------------------
+CptNonPar::np.mojo(mean_data_3, G = floor(nrow(mean_data_3) / 6))$cpts
+
+## ----multivariate-mean-change-InspectChangepoint------------------------------
+invisible(
+  suppressMessages(
+    capture.output(
+      result_InspectChangepoint <- InspectChangepoint::inspect(
+        t(mean_data_3),
+        threshold = InspectChangepoint::compute.threshold(
+          nrow(mean_data_3), ncol(mean_data_3)
+        )
+      )
+    )
+  )
+)
+result_InspectChangepoint$changepoints[, "location"]
+
+## ----multivariate-mean-change-jointseg----------------------------------------
+jointseg::jointSeg(mean_data_3, K = 2)$bestBkp
+
+## ----multivariate-mean-change-Rbeast------------------------------------------
+invisible(
+  capture.output(
+    result_Rbeast <- Rbeast::beast123(
+      mean_data_3,
+      metadata = list(whichDimIsTime = 1),
+      season = "none"
+    )
+  )
+)
+result_Rbeast$trend$cp
 
 ## ----multivariate-mean-change-strucchange-------------------------------------
 # Slow
@@ -276,6 +401,33 @@ fastcpd::fastcpd.mv(mv_data_3, r.progress = FALSE)@cp_set
 ## ----multivariate-mean-and-or-variance-change-ecp-----------------------------
 # Slow
 ecp::e.divisive(mv_data_3)$estimates
+
+## ----multivariate-mean-and-or-variance-change-InspectChangepoint--------------
+invisible(
+  suppressMessages(
+    capture.output(
+      result_InspectChangepoint <- InspectChangepoint::inspect(
+        t(mv_data_3),
+        threshold = InspectChangepoint::compute.threshold(
+          nrow(mv_data_3), ncol(mv_data_3)
+        )
+      )
+    )
+  )
+)
+result_InspectChangepoint$changepoints[, "location"]
+
+## ----multivariate-mean-and-or-variance-change-Rbeast--------------------------
+invisible(
+  capture.output(
+    result_Rbeast <- Rbeast::beast123(
+      mv_data_3,
+      metadata = list(whichDimIsTime = 1),
+      season = "none"
+    )
+  )
+)
+result_Rbeast$trend$cp
 
 ## ----linear-regression-fastcpd------------------------------------------------
 fastcpd::fastcpd.lm(lm_data, r.progress = FALSE)@cp_set
@@ -315,6 +467,9 @@ strucchange::breakpoints(y ~ . - 1, data = lasso_data)$breakpoints
 ## ----ar3-fastcpd--------------------------------------------------------------
 fastcpd::fastcpd.ar(ar_data, 3, r.progress = FALSE)@cp_set
 
+## ----ar3-CptNonPar------------------------------------------------------------
+CptNonPar::np.mojo(ar_data, G = floor(length(ar_data) / 6))$cpts
+
 ## ----ar3-segmented------------------------------------------------------------
 segmented::segmented(
   lm(
@@ -338,6 +493,686 @@ if (interactive()) {
 ## ----garch11-fastcpd----------------------------------------------------------
 fastcpd::fastcpd.garch(garch_data, c(1, 1), r.progress = FALSE)@cp_set
 
+## ----garch11-CptNonPar--------------------------------------------------------
+CptNonPar::np.mojo(garch_data, G = floor(length(garch_data) / 6))$cpts
+
 ## ----garch11-strucchange------------------------------------------------------
 strucchange::breakpoints(x ~ 1, data = data.frame(x = garch_data))$breakpoints
+
+## ----var2-fastcpd-------------------------------------------------------------
+fastcpd::fastcpd.var(
+  var_data, 2, cost_adjustment = NULL, r.progress = FALSE
+)@cp_set
+
+## ----var2-VARDetect-----------------------------------------------------------
+VARDetect::tbss(var_data)
+
+## ----detection-comparison-well-log, eval = FALSE------------------------------
+#  result <- list(
+#    fastcpd = fastcpd.mean(well_log, trim = 0.003)@cp_set,
+#    changepoint = changepoint::cpt.mean(well_log)@cpts,
+#    CptNonPar =
+#      CptNonPar::np.mojo(well_log, G = floor(length(well_log) / 6))$cpts,
+#    strucchange = strucchange::breakpoints(
+#      y ~ 1, data = data.frame(y = well_log)
+#    )$breakpoints,
+#    ecp = ecp::e.divisive(matrix(well_log))$estimates,
+#    breakfast = breakfast::breakfast(well_log)$cptmodel.list[[6]]$cpts,
+#    wbs = wbs::wbs(well_log)$cpt$cpt.ic$mbic.penalty,
+#    mosum = mosum::mosum(c(well_log), G = 40)$cpts.info$cpts,
+#    # fpop = fpop::Fpop(well_log, length(well_log))$t.est,  # meaningless
+#    gfpop = gfpop::gfpop(
+#      data = well_log,
+#      mygraph = gfpop::graph(
+#        penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
+#        type = "updown"
+#      ),
+#      type = "mean"
+#    )$changepoints,
+#    InspectChangepoint = InspectChangepoint::inspect(
+#      well_log,
+#      threshold = InspectChangepoint::compute.threshold(length(well_log), 1)
+#    )$changepoints[, "location"],
+#    jointseg = jointseg::jointSeg(well_log, K = 12)$bestBkp,
+#    Rbeast = Rbeast::beast(
+#      well_log, season = "none", print.progress = FALSE, quiet = TRUE
+#    )$trend$cp,
+#    stepR = stepR::stepFit(well_log, alpha = 0.5)$rightEnd
+#  )
+#  
+#  package_list <- sort(names(result), decreasing = TRUE)
+#  comparison_table <- NULL
+#  for (package_index in seq_along(package_list)) {
+#    package <- package_list[[package_index]]
+#    comparison_table <- rbind(
+#      comparison_table,
+#      data.frame(
+#        change_point = result[[package]],
+#        package = package,
+#        y_offset = (package_index - 1) * 400
+#      )
+#    )
+#  }
+#  
+#  most_selected <- sort(table(comparison_table$change_point), decreasing = TRUE)
+#  most_selected <- sort(as.numeric(names(most_selected[most_selected >= 4])))
+#  for (i in seq_len(length(most_selected) - 1)) {
+#    if (most_selected[i + 1] - most_selected[i] < 2) {
+#      most_selected[i] <- NA
+#      most_selected[i + 1] <- most_selected[i + 1] - 0.5
+#    }
+#  }
+#  (most_selected <- most_selected[!is.na(most_selected)])
+#  #>  [1]    6.0  314.0  434.0  704.0  776.0 1021.0 1057.0 1347.0 1405.0 1502.0 1661.0 1842.0 2023.0 2202.0
+#  #> [15] 2384.5 2445.0 2507.0 2567.5 2738.0 2921.0 3094.0 3251.0 3464.0 3499.0 3622.0 3709.0 3820.0 3976.0
+
+## ----detection-comparison-well-log-plot, eval = FALSE-------------------------
+#  ggplot2::ggplot() +
+#    ggplot2::geom_point(
+#      data = data.frame(x = seq_along(well_log), y = c(well_log)),
+#      ggplot2::aes(x = x, y = y)
+#    ) +
+#    ggplot2::geom_vline(
+#      xintercept = most_selected,
+#      color = "black",
+#      linetype = "dashed",
+#      alpha = 0.2
+#    ) +
+#    ggplot2::geom_point(
+#      data = comparison_table,
+#      ggplot2::aes(x = change_point, y = 95000 + y_offset, color = package),
+#      shape = 17,
+#      size = 1.75
+#    ) +
+#    ggplot2::geom_hline(
+#      data = comparison_table,
+#      ggplot2::aes(yintercept = 95000 + y_offset, color = package),
+#      linetype = "dashed",
+#      alpha = 0.1
+#    ) +
+#    ggplot2::coord_cartesian(
+#      ylim = c(95000 - 500, max(well_log) + 1000),
+#      xlim = c(-200, length(well_log) + 200),
+#      expand = FALSE
+#    ) +
+#    ggplot2::theme(
+#      panel.background = ggplot2::element_blank(),
+#      panel.border = ggplot2::element_rect(colour = "black", fill = NA),
+#      panel.grid.major = ggplot2::element_blank(),
+#      panel.grid.minor = ggplot2::element_blank()
+#    ) +
+#    ggplot2::xlab(NULL) + ggplot2::ylab(NULL)
+
+## ----time-comparison-well-log, eval = FALSE-----------------------------------
+#  microbenchmark_result <- microbenchmark::microbenchmark(
+#    fastcpd = fastcpd::fastcpd.mean(well_log, trim = 0.003, r.progress = FALSE),
+#    changepoint = changepoint::cpt.mean(well_log, method = "PELT"),
+#    CptNonPar = CptNonPar::np.mojo(well_log, G = floor(length(well_log) / 6)),
+#    strucchange =
+#      strucchange::breakpoints(y ~ 1, data = data.frame(y = well_log)),
+#    ecp = ecp::e.divisive(matrix(well_log)),
+#    breakfast = breakfast::breakfast(well_log),
+#    wbs = wbs::wbs(well_log),
+#    mosum = mosum::mosum(c(well_log), G = 40),
+#    fpop = fpop::Fpop(well_log, nrow(well_log)),
+#    gfpop = gfpop::gfpop(
+#      data = well_log,
+#      mygraph = gfpop::graph(
+#        penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
+#        type = "updown"
+#      ),
+#      type = "mean"
+#    ),
+#    InspectChangepoint = InspectChangepoint::inspect(
+#      well_log,
+#      threshold = InspectChangepoint::compute.threshold(length(well_log), 1)
+#    ),
+#    jointseg = jointseg::jointSeg(well_log, K = 12),
+#    Rbeast = Rbeast::beast(
+#      well_log, season = "none", print.progress = FALSE, quiet = TRUE
+#    ),
+#    stepR = stepR::stepFit(well_log, alpha = 0.5),
+#    # mcp = mcp::mcp(
+#    #   list(y ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1),
+#    #   data = data.frame(y = well_log, x = seq_along(well_log)),
+#    #   par_x = "x"
+#    # ),
+#    not = not::not(well_log, contrast = "pcwsConstMean"),
+#    times = 10
+#  )
+#  #> Unit: milliseconds
+#  #>                expr          min           lq         mean       median           uq          max neval
+#  #>             fastcpd 4.010279e+02 4.129134e+02 4.171979e+02 4.148564e+02 4.196057e+02 4.350300e+02    10
+#  #>         changepoint 3.195488e+01 3.230887e+01 3.743290e+01 3.352390e+01 4.418598e+01 4.980063e+01    10
+#  #>           CptNonPar 1.809139e+04 1.867986e+04 1.904000e+04 1.876936e+04 1.947816e+04 2.076009e+04    10
+#  #>         strucchange 5.813672e+04 5.831023e+04 5.963604e+04 5.952739e+04 6.139957e+04 6.173251e+04    10
+#  #>                 ecp 7.534981e+05 7.642983e+05 7.742041e+05 7.661485e+05 7.880130e+05 8.003981e+05    10
+#  #>           breakfast 9.231426e+03 9.261763e+03 9.514283e+03 9.492325e+03 9.630395e+03 1.001344e+04    10
+#  #>                 wbs 1.133042e+02 1.168601e+02 1.189637e+02 1.187244e+02 1.201765e+02 1.281057e+02    10
+#  #>               mosum 1.082397e+00 1.167387e+00 1.213233e+00 1.209105e+00 1.286479e+00 1.320333e+00    10
+#  #>                fpop 2.407630e+00 2.481348e+00 2.641625e+00 2.551970e+00 2.618455e+00 3.328585e+00    10
+#  #>               gfpop 5.918783e+01 5.959448e+01 6.081621e+01 6.006626e+01 6.048699e+01 6.725864e+01    10
+#  #>  InspectChangepoint 1.550181e+02 1.885944e+02 2.103973e+02 2.030795e+02 2.262247e+02 3.025476e+02    10
+#  #>            jointseg 1.082510e+01 1.082948e+01 1.174498e+01 1.110779e+01 1.221183e+01 1.424236e+01    10
+#  #>              Rbeast 6.311987e+02 6.634019e+02 6.702594e+02 6.680217e+02 6.846772e+02 7.048629e+02    10
+#  #>               stepR 2.812109e+01 2.836331e+01 2.864408e+01 2.862293e+01 2.897236e+01 2.933441e+01    10
+#  #>                 not 9.350182e+01 9.469137e+01 9.684097e+01 9.647117e+01 9.763828e+01 1.031233e+02    10
+
+## ----time-comparison-well-log-plot, eval = FALSE------------------------------
+#  ggplot2::autoplot(microbenchmark_result)
+
+## ----ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE---------------
+#  knitr::opts_chunk$set(
+#    collapse = TRUE, comment = "#>", eval = TRUE, cache = FALSE,
+#    warning = FALSE, fig.width = 8, fig.height = 5
+#  )
+#  for (
+#    package in c(
+#      "ggplot2", "mvtnorm",
+#      # "bcp",
+#      "breakfast", "changepoint", "cpm", "CptNonPar", "ecp", "fpop", "gfpop",
+#      "InspectChangepoint", "jointseg", "mcp", "mosum", "not", "Rbeast",
+#      "segmented", "stepR", "strucchange", "VARDetect", "wbs"
+#    )
+#  ) {
+#    if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
+#      package, repos = "https://cloud.r-project.org", quiet = TRUE
+#    )
+#  }
+#  # Univariate mean change
+#  set.seed(1)
+#  p <- 1
+#  mean_data_1 <- rbind(
+#    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(100, p)),
+#    mvtnorm::rmvnorm(400, mean = rep(50, p), sigma = diag(100, p)),
+#    mvtnorm::rmvnorm(300, mean = rep(2, p), sigma = diag(100, p))
+#  )
+#  
+#  plot.ts(mean_data_1)
+#  # Univariate mean and/or variance change
+#  set.seed(1)
+#  p <- 1
+#  mv_data_1 <- rbind(
+#    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
+#    mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
+#    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(50, p)),
+#    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
+#    mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
+#    mvtnorm::rmvnorm(300, mean = rep(10, p), sigma = diag(50, p))
+#  )
+#  
+#  plot.ts(mv_data_1)
+#  # Multivariate mean change
+#  set.seed(1)
+#  p <- 3
+#  mean_data_3 <- rbind(
+#    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(100, p)),
+#    mvtnorm::rmvnorm(400, mean = rep(50, p), sigma = diag(100, p)),
+#    mvtnorm::rmvnorm(300, mean = rep(2, p), sigma = diag(100, p))
+#  )
+#  
+#  plot.ts(mean_data_3)
+#  # Multivariate mean and/or variance change
+#  set.seed(1)
+#  p <- 3
+#  mv_data_3 <- rbind(
+#    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
+#    mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
+#    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(50, p)),
+#    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
+#    mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
+#    mvtnorm::rmvnorm(300, mean = rep(10, p), sigma = diag(50, p))
+#  )
+#  
+#  plot.ts(mv_data_3)
+#  # Linear regression
+#  set.seed(1)
+#  n <- 300
+#  p <- 4
+#  x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
+#  theta_0 <- rbind(c(1, 3.2, -1, 0), c(-1, -0.5, 2.5, -2), c(0.8, 0, 1, 2))
+#  y <- c(
+#    x[1:100, ] %*% theta_0[1, ] + rnorm(100, 0, 3),
+#    x[101:200, ] %*% theta_0[2, ] + rnorm(100, 0, 3),
+#    x[201:n, ] %*% theta_0[3, ] + rnorm(100, 0, 3)
+#  )
+#  lm_data <- data.frame(y = y, x = x)
+#  
+#  plot.ts(lm_data)
+#  # Logistic regression
+#  set.seed(1)
+#  n <- 500
+#  p <- 4
+#  x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
+#  theta <- rbind(rnorm(p, 0, 1), rnorm(p, 2, 1))
+#  y <- c(
+#    rbinom(300, 1, 1 / (1 + exp(-x[1:300, ] %*% theta[1, ]))),
+#    rbinom(200, 1, 1 / (1 + exp(-x[301:n, ] %*% theta[2, ])))
+#  )
+#  binomial_data <- data.frame(y = y, x = x)
+#  
+#  plot.ts(binomial_data)
+#  # Poisson regression
+#  set.seed(1)
+#  n <- 1100
+#  p <- 3
+#  x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
+#  delta <- rnorm(p)
+#  theta_0 <- c(1, 0.3, -1)
+#  y <- c(
+#    rpois(500, exp(x[1:500, ] %*% theta_0)),
+#    rpois(300, exp(x[501:800, ] %*% (theta_0 + delta))),
+#    rpois(200, exp(x[801:1000, ] %*% theta_0)),
+#    rpois(100, exp(x[1001:1100, ] %*% (theta_0 - delta)))
+#  )
+#  poisson_data <- data.frame(y = y, x = x)
+#  
+#  plot.ts(log(poisson_data$y))
+#  plot.ts(poisson_data[, -1])
+#  # Lasso
+#  set.seed(1)
+#  n <- 480
+#  p_true <- 6
+#  p <- 50
+#  x <- mvtnorm::rmvnorm(n, rep(0, p), diag(p))
+#  theta_0 <- rbind(
+#    runif(p_true, -5, -2),
+#    runif(p_true, -3, 3),
+#    runif(p_true, 2, 5),
+#    runif(p_true, -5, 5)
+#  )
+#  theta_0 <- cbind(theta_0, matrix(0, ncol = p - p_true, nrow = 4))
+#  y <- c(
+#    x[1:80, ] %*% theta_0[1, ] + rnorm(80, 0, 1),
+#    x[81:200, ] %*% theta_0[2, ] + rnorm(120, 0, 1),
+#    x[201:320, ] %*% theta_0[3, ] + rnorm(120, 0, 1),
+#    x[321:n, ] %*% theta_0[4, ] + rnorm(160, 0, 1)
+#  )
+#  lasso_data <- data.frame(y = y, x = x)
+#  
+#  plot.ts(lasso_data[, seq_len(p_true + 1)])
+#  # AR(3)
+#  set.seed(1)
+#  n <- 1000
+#  x <- rep(0, n + 3)
+#  for (i in 1:600) {
+#    x[i + 3] <- 0.6 * x[i + 2] - 0.2 * x[i + 1] + 0.1 * x[i] + rnorm(1, 0, 3)
+#  }
+#  for (i in 601:1000) {
+#    x[i + 3] <- 0.3 * x[i + 2] + 0.4 * x[i + 1] + 0.2 * x[i] + rnorm(1, 0, 3)
+#  }
+#  ar_data <- x[-seq_len(3)]
+#  
+#  plot.ts(ar_data)
+#  # GARCH(1, 1)
+#  set.seed(1)
+#  n <- 400
+#  sigma_2 <- rep(1, n + 1)
+#  x <- rep(0, n + 1)
+#  for (i in seq_len(200)) {
+#    sigma_2[i + 1] <- 20 + 0.5 * x[i]^2 + 0.1 * sigma_2[i]
+#    x[i + 1] <- rnorm(1, 0, sqrt(sigma_2[i + 1]))
+#  }
+#  for (i in 201:400) {
+#    sigma_2[i + 1] <- 1 + 0.1 * x[i]^2 + 0.5 * sigma_2[i]
+#    x[i + 1] <- rnorm(1, 0, sqrt(sigma_2[i + 1]))
+#  }
+#  garch_data <- x[-1]
+#  
+#  plot.ts(garch_data)
+#  # VAR(2)
+#  set.seed(1)
+#  n <- 800
+#  p <- 2
+#  theta_1 <- matrix(c(-0.3, 0.6, -0.5, 0.4, 0.2, 0.2, 0.2, -0.2), nrow = p)
+#  theta_2 <- matrix(c(0.3, -0.4, 0.1, -0.5, -0.5, -0.2, -0.5, 0.2), nrow = p)
+#  x <- matrix(0, n + 2, p)
+#  for (i in 1:500) {
+#    x[i + 2, ] <- theta_1 %*% c(x[i + 1, ], x[i, ]) + rnorm(p, 0, 1)
+#  }
+#  for (i in 501:n) {
+#    x[i + 2, ] <- theta_2 %*% c(x[i + 1, ], x[i, ]) + rnorm(p, 0, 1)
+#  }
+#  var_data <- x[-seq_len(2), ]
+#  
+#  plot.ts(var_data)
+#  fastcpd::fastcpd.mean(mean_data_1, r.progress = FALSE)@cp_set
+#  CptNonPar::np.mojo(mean_data_1, G = floor(length(mean_data_1) / 6))$cpts
+#  # Slow
+#  strucchange::breakpoints(y ~ 1, data = data.frame(y = mean_data_1))$breakpoints
+#  # Slower
+#  ecp::e.divisive(mean_data_1)$estimates
+#  # Data need to be processed
+#  changepoint::cpt.mean(c(mean_data_1))@cpts
+#  breakfast::breakfast(mean_data_1)$cptmodel.list[[6]]$cpts
+#  wbs::wbs(mean_data_1)$cpt$cpt.ic$mbic.penalty
+#  # Data need to be processed. `G` is selected based on the example
+#  if (interactive()) {
+#    mosum::mosum(c(mean_data_1), G = 40)$cpts.info$cpts
+#  }
+#  fpop::Fpop(mean_data_1, nrow(mean_data_1))$t.est
+#  gfpop::gfpop(
+#    data = mean_data_1,
+#    mygraph = gfpop::graph(
+#      penalty = 2 * log(nrow(mean_data_1)) * gfpop::sdDiff(mean_data_1) ^ 2,
+#      type = "updown"
+#    ),
+#    type = "mean"
+#  )$changepoints
+#  invisible(
+#    suppressMessages(
+#      capture.output(
+#        result_InspectChangepoint <- InspectChangepoint::inspect(
+#          t(mean_data_1),
+#          threshold = InspectChangepoint::compute.threshold(
+#            nrow(mean_data_1), ncol(mean_data_1)
+#          )
+#        )
+#      )
+#    )
+#  )
+#  result_InspectChangepoint$changepoints[, "location"]
+#  jointseg::jointSeg(mean_data_1, K = 2)$bestBkp
+#  Rbeast::beast(
+#    mean_data_1, season = "none", print.progress = FALSE, quiet = TRUE
+#  )$trend$cp
+#  stepR::stepFit(mean_data_1, alpha = 0.5)$rightEnd
+#  cpm::processStream(mean_data_1, cpmType = "Student")$changePoints
+#  segmented::segmented(
+#    lm(y ~ 1 + x, data.frame(y = mean_data_1, x = seq_len(nrow(mean_data_1)))),
+#    seg.Z = ~ x
+#  )$psi[, "Est."]
+#  # Slowest
+#  if (interactive()) {
+#    plot(
+#      mcp::mcp(
+#        list(y ~ 1, ~ 1, ~ 1),
+#        data = data.frame(y = mean_data_1, x = seq_len(nrow(mean_data_1))),
+#        par_x = "x"
+#      )
+#    )
+#  }
+#  plot(not::not(mean_data_1, contrast = "pcwsConstMean"))
+#  # plot(bcp::bcp(mean_data_1))
+#  fastcpd::fastcpd.mv(mv_data_1, r.progress = FALSE)@cp_set
+#  # Slow
+#  ecp::e.divisive(mv_data_1)$estimates
+#  # Data need to be processed
+#  changepoint::cpt.meanvar(c(mv_data_1))@cpts
+#  CptNonPar::np.mojo(mv_data_1, G = floor(length(mv_data_1) / 6))$cpts
+#  cpm::processStream(mv_data_1, cpmType = "GLR")$changePoints
+#  invisible(
+#    suppressMessages(
+#      capture.output(
+#        result_InspectChangepoint <- InspectChangepoint::inspect(
+#          t(mv_data_1),
+#          threshold = InspectChangepoint::compute.threshold(
+#            nrow(mv_data_1), ncol(mv_data_1)
+#          )
+#        )
+#      )
+#    )
+#  )
+#  result_InspectChangepoint$changepoints[, "location"]
+#  Rbeast::beast(
+#    mv_data_1, season = "none", print.progress = FALSE, quiet = TRUE
+#  )$trend$cp
+#  # Slower
+#  if (interactive()) {
+#    plot(
+#      mcp::mcp(
+#        list(y ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1),
+#        data = data.frame(y = mv_data_1, x = seq_len(nrow(mv_data_1))),
+#        par_x = "x"
+#      )
+#    )
+#  }
+#  plot(not::not(mv_data_1, contrast = "pcwsConstMeanVar"))
+#  fastcpd::fastcpd.mean(mean_data_3, r.progress = FALSE)@cp_set
+#  CptNonPar::np.mojo(mean_data_3, G = floor(nrow(mean_data_3) / 6))$cpts
+#  invisible(
+#    suppressMessages(
+#      capture.output(
+#        result_InspectChangepoint <- InspectChangepoint::inspect(
+#          t(mean_data_3),
+#          threshold = InspectChangepoint::compute.threshold(
+#            nrow(mean_data_3), ncol(mean_data_3)
+#          )
+#        )
+#      )
+#    )
+#  )
+#  result_InspectChangepoint$changepoints[, "location"]
+#  jointseg::jointSeg(mean_data_3, K = 2)$bestBkp
+#  invisible(
+#    capture.output(
+#      result_Rbeast <- Rbeast::beast123(
+#        mean_data_3,
+#        metadata = list(whichDimIsTime = 1),
+#        season = "none"
+#      )
+#    )
+#  )
+#  result_Rbeast$trend$cp
+#  # Slow
+#  strucchange::breakpoints(
+#    cbind(y.1, y.2, y.3) ~ 1, data = data.frame(y = mean_data_3)
+#  )$breakpoints
+#  # Slower
+#  ecp::e.divisive(mean_data_3)$estimates
+#  # plot(bcp::bcp(mean_data_3))
+#  fastcpd::fastcpd.mv(mv_data_3, r.progress = FALSE)@cp_set
+#  # Slow
+#  ecp::e.divisive(mv_data_3)$estimates
+#  invisible(
+#    suppressMessages(
+#      capture.output(
+#        result_InspectChangepoint <- InspectChangepoint::inspect(
+#          t(mv_data_3),
+#          threshold = InspectChangepoint::compute.threshold(
+#            nrow(mv_data_3), ncol(mv_data_3)
+#          )
+#        )
+#      )
+#    )
+#  )
+#  result_InspectChangepoint$changepoints[, "location"]
+#  invisible(
+#    capture.output(
+#      result_Rbeast <- Rbeast::beast123(
+#        mv_data_3,
+#        metadata = list(whichDimIsTime = 1),
+#        season = "none"
+#      )
+#    )
+#  )
+#  result_Rbeast$trend$cp
+#  fastcpd::fastcpd.lm(lm_data, r.progress = FALSE)@cp_set
+#  strucchange::breakpoints(y ~ . - 1, data = lm_data)$breakpoints
+#  segmented::segmented(
+#    lm(
+#      y ~ . - 1,
+#      data.frame(y = lm_data$y, x = lm_data[, -1], index = seq_len(nrow(lm_data)))
+#    ),
+#    seg.Z = ~ index
+#  )$psi[, "Est."]
+#  fastcpd::fastcpd.binomial(binomial_data, r.progress = FALSE)@cp_set
+#  strucchange::breakpoints(y ~ . - 1, data = binomial_data)$breakpoints
+#  fastcpd::fastcpd.poisson(poisson_data, r.progress = FALSE)@cp_set
+#  # Slow
+#  strucchange::breakpoints(y ~ . - 1, data = poisson_data)$breakpoints
+#  fastcpd::fastcpd.lasso(lasso_data, r.progress = FALSE)@cp_set
+#  # Slow
+#  strucchange::breakpoints(y ~ . - 1, data = lasso_data)$breakpoints
+#  fastcpd::fastcpd.ar(ar_data, 3, r.progress = FALSE)@cp_set
+#  CptNonPar::np.mojo(ar_data, G = floor(length(ar_data) / 6))$cpts
+#  segmented::segmented(
+#    lm(
+#      y ~ x + 1, data.frame(y = ar_data, x = seq_along(ar_data))
+#    ),
+#    seg.Z = ~ x
+#  )$psi[, "Est."]
+#  # Slow
+#  if (interactive()) {
+#    plot(
+#      mcp::mcp(
+#        list(y ~ 1 + ar(3), ~ 0 + ar(3)),
+#        data = data.frame(y = ar_data, x = seq_along(ar_data)),
+#        par_x = "x"
+#      )
+#    )
+#  }
+#  fastcpd::fastcpd.garch(garch_data, c(1, 1), r.progress = FALSE)@cp_set
+#  CptNonPar::np.mojo(garch_data, G = floor(length(garch_data) / 6))$cpts
+#  strucchange::breakpoints(x ~ 1, data = data.frame(x = garch_data))$breakpoints
+#  fastcpd::fastcpd.var(
+#    var_data, 2, cost_adjustment = NULL, r.progress = FALSE
+#  )@cp_set
+#  VARDetect::tbss(var_data)
+#  result <- list(
+#    fastcpd = fastcpd.mean(well_log, trim = 0.003)@cp_set,
+#    changepoint = changepoint::cpt.mean(well_log)@cpts,
+#    CptNonPar =
+#      CptNonPar::np.mojo(well_log, G = floor(length(well_log) / 6))$cpts,
+#    strucchange = strucchange::breakpoints(
+#      y ~ 1, data = data.frame(y = well_log)
+#    )$breakpoints,
+#    ecp = ecp::e.divisive(matrix(well_log))$estimates,
+#    breakfast = breakfast::breakfast(well_log)$cptmodel.list[[6]]$cpts,
+#    wbs = wbs::wbs(well_log)$cpt$cpt.ic$mbic.penalty,
+#    mosum = mosum::mosum(c(well_log), G = 40)$cpts.info$cpts,
+#    # fpop = fpop::Fpop(well_log, length(well_log))$t.est,  # meaningless
+#    gfpop = gfpop::gfpop(
+#      data = well_log,
+#      mygraph = gfpop::graph(
+#        penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
+#        type = "updown"
+#      ),
+#      type = "mean"
+#    )$changepoints,
+#    InspectChangepoint = InspectChangepoint::inspect(
+#      well_log,
+#      threshold = InspectChangepoint::compute.threshold(length(well_log), 1)
+#    )$changepoints[, "location"],
+#    jointseg = jointseg::jointSeg(well_log, K = 12)$bestBkp,
+#    Rbeast = Rbeast::beast(
+#      well_log, season = "none", print.progress = FALSE, quiet = TRUE
+#    )$trend$cp,
+#    stepR = stepR::stepFit(well_log, alpha = 0.5)$rightEnd
+#  )
+#  
+#  package_list <- sort(names(result), decreasing = TRUE)
+#  comparison_table <- NULL
+#  for (package_index in seq_along(package_list)) {
+#    package <- package_list[[package_index]]
+#    comparison_table <- rbind(
+#      comparison_table,
+#      data.frame(
+#        change_point = result[[package]],
+#        package = package,
+#        y_offset = (package_index - 1) * 400
+#      )
+#    )
+#  }
+#  
+#  most_selected <- sort(table(comparison_table$change_point), decreasing = TRUE)
+#  most_selected <- sort(as.numeric(names(most_selected[most_selected >= 4])))
+#  for (i in seq_len(length(most_selected) - 1)) {
+#    if (most_selected[i + 1] - most_selected[i] < 2) {
+#      most_selected[i] <- NA
+#      most_selected[i + 1] <- most_selected[i + 1] - 0.5
+#    }
+#  }
+#  (most_selected <- most_selected[!is.na(most_selected)])
+#  #>  [1]    6.0  314.0  434.0  704.0  776.0 1021.0 1057.0 1347.0 1405.0 1502.0 1661.0 1842.0 2023.0 2202.0
+#  #> [15] 2384.5 2445.0 2507.0 2567.5 2738.0 2921.0 3094.0 3251.0 3464.0 3499.0 3622.0 3709.0 3820.0 3976.0
+#  ggplot2::ggplot() +
+#    ggplot2::geom_point(
+#      data = data.frame(x = seq_along(well_log), y = c(well_log)),
+#      ggplot2::aes(x = x, y = y)
+#    ) +
+#    ggplot2::geom_vline(
+#      xintercept = most_selected,
+#      color = "black",
+#      linetype = "dashed",
+#      alpha = 0.2
+#    ) +
+#    ggplot2::geom_point(
+#      data = comparison_table,
+#      ggplot2::aes(x = change_point, y = 95000 + y_offset, color = package),
+#      shape = 17,
+#      size = 1.75
+#    ) +
+#    ggplot2::geom_hline(
+#      data = comparison_table,
+#      ggplot2::aes(yintercept = 95000 + y_offset, color = package),
+#      linetype = "dashed",
+#      alpha = 0.1
+#    ) +
+#    ggplot2::coord_cartesian(
+#      ylim = c(95000 - 500, max(well_log) + 1000),
+#      xlim = c(-200, length(well_log) + 200),
+#      expand = FALSE
+#    ) +
+#    ggplot2::theme(
+#      panel.background = ggplot2::element_blank(),
+#      panel.border = ggplot2::element_rect(colour = "black", fill = NA),
+#      panel.grid.major = ggplot2::element_blank(),
+#      panel.grid.minor = ggplot2::element_blank()
+#    ) +
+#    ggplot2::xlab(NULL) + ggplot2::ylab(NULL)
+#  microbenchmark_result <- microbenchmark::microbenchmark(
+#    fastcpd = fastcpd::fastcpd.mean(well_log, trim = 0.003, r.progress = FALSE),
+#    changepoint = changepoint::cpt.mean(well_log, method = "PELT"),
+#    CptNonPar = CptNonPar::np.mojo(well_log, G = floor(length(well_log) / 6)),
+#    strucchange =
+#      strucchange::breakpoints(y ~ 1, data = data.frame(y = well_log)),
+#    ecp = ecp::e.divisive(matrix(well_log)),
+#    breakfast = breakfast::breakfast(well_log),
+#    wbs = wbs::wbs(well_log),
+#    mosum = mosum::mosum(c(well_log), G = 40),
+#    fpop = fpop::Fpop(well_log, nrow(well_log)),
+#    gfpop = gfpop::gfpop(
+#      data = well_log,
+#      mygraph = gfpop::graph(
+#        penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
+#        type = "updown"
+#      ),
+#      type = "mean"
+#    ),
+#    InspectChangepoint = InspectChangepoint::inspect(
+#      well_log,
+#      threshold = InspectChangepoint::compute.threshold(length(well_log), 1)
+#    ),
+#    jointseg = jointseg::jointSeg(well_log, K = 12),
+#    Rbeast = Rbeast::beast(
+#      well_log, season = "none", print.progress = FALSE, quiet = TRUE
+#    ),
+#    stepR = stepR::stepFit(well_log, alpha = 0.5),
+#    # mcp = mcp::mcp(
+#    #   list(y ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1, ~ 1),
+#    #   data = data.frame(y = well_log, x = seq_along(well_log)),
+#    #   par_x = "x"
+#    # ),
+#    not = not::not(well_log, contrast = "pcwsConstMean"),
+#    times = 10
+#  )
+#  #> Unit: milliseconds
+#  #>                expr          min           lq         mean       median           uq          max neval
+#  #>             fastcpd 4.010279e+02 4.129134e+02 4.171979e+02 4.148564e+02 4.196057e+02 4.350300e+02    10
+#  #>         changepoint 3.195488e+01 3.230887e+01 3.743290e+01 3.352390e+01 4.418598e+01 4.980063e+01    10
+#  #>           CptNonPar 1.809139e+04 1.867986e+04 1.904000e+04 1.876936e+04 1.947816e+04 2.076009e+04    10
+#  #>         strucchange 5.813672e+04 5.831023e+04 5.963604e+04 5.952739e+04 6.139957e+04 6.173251e+04    10
+#  #>                 ecp 7.534981e+05 7.642983e+05 7.742041e+05 7.661485e+05 7.880130e+05 8.003981e+05    10
+#  #>           breakfast 9.231426e+03 9.261763e+03 9.514283e+03 9.492325e+03 9.630395e+03 1.001344e+04    10
+#  #>                 wbs 1.133042e+02 1.168601e+02 1.189637e+02 1.187244e+02 1.201765e+02 1.281057e+02    10
+#  #>               mosum 1.082397e+00 1.167387e+00 1.213233e+00 1.209105e+00 1.286479e+00 1.320333e+00    10
+#  #>                fpop 2.407630e+00 2.481348e+00 2.641625e+00 2.551970e+00 2.618455e+00 3.328585e+00    10
+#  #>               gfpop 5.918783e+01 5.959448e+01 6.081621e+01 6.006626e+01 6.048699e+01 6.725864e+01    10
+#  #>  InspectChangepoint 1.550181e+02 1.885944e+02 2.103973e+02 2.030795e+02 2.262247e+02 3.025476e+02    10
+#  #>            jointseg 1.082510e+01 1.082948e+01 1.174498e+01 1.110779e+01 1.221183e+01 1.424236e+01    10
+#  #>              Rbeast 6.311987e+02 6.634019e+02 6.702594e+02 6.680217e+02 6.846772e+02 7.048629e+02    10
+#  #>               stepR 2.812109e+01 2.836331e+01 2.864408e+01 2.862293e+01 2.897236e+01 2.933441e+01    10
+#  #>                 not 9.350182e+01 9.469137e+01 9.684097e+01 9.647117e+01 9.763828e+01 1.031233e+02    10
+#  ggplot2::autoplot(microbenchmark_result)
 
