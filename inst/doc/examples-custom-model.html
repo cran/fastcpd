@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -376,16 +376,16 @@ results as the built-in logistic regression model.</p>
 <span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a></span>
 <span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; Warning: fit_glm: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="fu">summary</span>(result)</span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
 <span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt; fastcpd.binomial(data = cbind(y, x), r.progress = FALSE, cost_adjustment = NULL)</span></span>
-<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt; Change points:</span></span>
-<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt; 126 </span></span>
-<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt; 126</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt; Cost values:</span></span>
-<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt; 56.90525 30.76875 </span></span>
-<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt; 56.90525 30.76875</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
 <span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a><span class="co">#&gt;    segment 1 segment 2</span></span>
 <span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a><span class="co">#&gt; 1  0.7259293  1.878525</span></span>
@@ -417,22 +417,22 @@ results as the built-in logistic regression model.</p>
 <span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
 <span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>)</span>
 <span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="fu">summary</span>(result)</span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt; fastcpd(formula = y ~ . - 1, data = binomial_data, cost = logistic_loss, </span></span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt;     cost_gradient = logistic_gradient, cost_hessian = logistic_hessian, </span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt; fastcpd(formula = y ~ . - 1, data = binomial_data, cost = logistic_loss,</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt;     cost_gradient = logistic_gradient, cost_hessian = logistic_hessian,</span></span>
 <span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt;     epsilon = 1e-05, r.progress = FALSE)</span></span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; Change points:</span></span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; 22 125 </span></span>
-<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; 22 125</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
 <span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt;   segment 1  segment 2 segment 3</span></span>
-<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt; 1 -59.20134  0.8170446  1.902379</span></span>
-<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt; 2 -34.56727 -0.9600438  2.751578</span></span>
-<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt; 3 216.53822  0.9353306  3.734179</span></span>
-<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt; 4 -80.96599 -0.7393653  2.247423</span></span>
-<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; 5  51.25318  0.1390591  2.535372</span></span></code></pre></div>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt; 1 -59.20045  0.8170446  1.902379</span></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt; 2 -34.56676 -0.9600438  2.751578</span></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt; 3 216.53373  0.9353306  3.734179</span></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt; 4 -80.96420 -0.7393653  2.247423</span></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; 5  51.25224  0.1390591  2.535372</span></span></code></pre></div>
 <p>Note that the result obtained through custom cost functions is
 inferior compared to the one obtained through built-in models. We remark
 that the results can be improved with extra parameters already provided
@@ -441,7 +441,7 @@ the package can be found in <a href="https://fastcpd.xingchi.li/articles/example
 examples</a>.</p>
 <div id="appendix-all-code-snippets" class="section level1">
 <h1>Appendix: all code snippets</h1>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">collapse =</span> <span class="cn">TRUE</span>, <span class="at">comment =</span> <span class="st">&quot;#&gt;&quot;</span>)</span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">collapse =</span> <span class="cn">TRUE</span>, <span class="at">comment =</span> <span class="st">&quot;#&gt;&quot;</span>, <span class="at">eval =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">library</span>(fastcpd)</span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="cf">for</span> (package <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;ggplot2&quot;</span>, <span class="st">&quot;mvtnorm&quot;</span>)) {</span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(package, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) utils<span class="sc">::</span><span class="fu">install.packages</span>(</span>
@@ -458,31 +458,71 @@ examples</a>.</p>
 <span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>binomial_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y =</span> y, <span class="at">x =</span> x)</span>
 <span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a></span>
 <span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">fastcpd.binomial</span>(<span class="fu">cbind</span>(y, x), <span class="at">r.progress =</span> <span class="cn">FALSE</span>, <span class="at">cost_adjustment =</span> <span class="cn">NULL</span>)</span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="fu">summary</span>(result)</span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>logistic_loss <span class="ot">&lt;-</span> <span class="cf">function</span>(data, theta) {</span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[, <span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>  y <span class="ot">&lt;-</span> data[, <span class="dv">1</span>]</span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>  u <span class="ot">&lt;-</span> x <span class="sc">%*%</span> theta</span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>  nll <span class="ot">&lt;-</span> <span class="sc">-</span>y <span class="sc">*</span> u <span class="sc">+</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(u))</span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>  nll[u <span class="sc">&gt;</span> <span class="dv">10</span>] <span class="ot">&lt;-</span> <span class="sc">-</span>y[u <span class="sc">&gt;</span> <span class="dv">10</span>] <span class="sc">*</span> u[u <span class="sc">&gt;</span> <span class="dv">10</span>] <span class="sc">+</span> u[u <span class="sc">&gt;</span> <span class="dv">10</span>]</span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>  <span class="fu">sum</span>(nll)</span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>}</span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>logistic_gradient <span class="ot">&lt;-</span> <span class="cf">function</span>(data, theta) {</span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[<span class="fu">nrow</span>(data), <span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a>  y <span class="ot">&lt;-</span> data[<span class="fu">nrow</span>(data), <span class="dv">1</span>]</span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a>  <span class="fu">c</span>(<span class="sc">-</span>(y <span class="sc">-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>x <span class="sc">%*%</span> theta)))) <span class="sc">*</span> x</span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a>}</span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a>logistic_hessian <span class="ot">&lt;-</span> <span class="cf">function</span>(data, theta) {</span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[<span class="fu">nrow</span>(data), <span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>x <span class="sc">%*%</span> theta))</span>
-<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a>  (x <span class="sc">%o%</span> x) <span class="sc">*</span> <span class="fu">c</span>((<span class="dv">1</span> <span class="sc">-</span> prob) <span class="sc">*</span> prob)</span>
-<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a>}</span>
-<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">fastcpd</span>(</span>
-<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a>  y <span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, binomial_data, <span class="at">epsilon =</span> <span class="fl">1e-5</span>, <span class="at">cost =</span> logistic_loss,</span>
-<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a>  <span class="at">cost_gradient =</span> logistic_gradient, <span class="at">cost_hessian =</span> logistic_hessian,</span>
-<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
-<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a>)</span>
-<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="fu">summary</span>(result)</span></code></pre></div>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; Warning: fit_glm: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; Warning: fit_glm: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; Warning: fit_glm: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; Warning: fit_glm: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="fu">summary</span>(result)</span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; fastcpd.binomial(data = cbind(y, x), r.progress = FALSE, cost_adjustment = NULL)</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; Change points:</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; 126</span></span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; Cost values:</span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; 56.90525 30.76875</span></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt;    segment 1 segment 2</span></span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; 1  0.7259293  1.878525</span></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; 2 -1.0294802  2.704376</span></span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">#&gt; 3  1.0576503  3.702310</span></span>
+<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; 4 -0.8812767  2.258796</span></span>
+<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">#&gt; 5  0.2419351  2.524173</span></span>
+<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a>logistic_loss <span class="ot">&lt;-</span> <span class="cf">function</span>(data, theta) {</span>
+<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[, <span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a>  y <span class="ot">&lt;-</span> data[, <span class="dv">1</span>]</span>
+<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a>  u <span class="ot">&lt;-</span> x <span class="sc">%*%</span> theta</span>
+<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a>  nll <span class="ot">&lt;-</span> <span class="sc">-</span>y <span class="sc">*</span> u <span class="sc">+</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(u))</span>
+<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a>  nll[u <span class="sc">&gt;</span> <span class="dv">10</span>] <span class="ot">&lt;-</span> <span class="sc">-</span>y[u <span class="sc">&gt;</span> <span class="dv">10</span>] <span class="sc">*</span> u[u <span class="sc">&gt;</span> <span class="dv">10</span>] <span class="sc">+</span> u[u <span class="sc">&gt;</span> <span class="dv">10</span>]</span>
+<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a>  <span class="fu">sum</span>(nll)</span>
+<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a>}</span>
+<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a>logistic_gradient <span class="ot">&lt;-</span> <span class="cf">function</span>(data, theta) {</span>
+<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[<span class="fu">nrow</span>(data), <span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a>  y <span class="ot">&lt;-</span> data[<span class="fu">nrow</span>(data), <span class="dv">1</span>]</span>
+<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a>  <span class="fu">c</span>(<span class="sc">-</span>(y <span class="sc">-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>x <span class="sc">%*%</span> theta)))) <span class="sc">*</span> x</span>
+<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a>}</span>
+<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a>logistic_hessian <span class="ot">&lt;-</span> <span class="cf">function</span>(data, theta) {</span>
+<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[<span class="fu">nrow</span>(data), <span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>x <span class="sc">%*%</span> theta))</span>
+<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a>  (x <span class="sc">%o%</span> x) <span class="sc">*</span> <span class="fu">c</span>((<span class="dv">1</span> <span class="sc">-</span> prob) <span class="sc">*</span> prob)</span>
+<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a>}</span>
+<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">fastcpd</span>(</span>
+<span id="cb4-62"><a href="#cb4-62" tabindex="-1"></a>  y <span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, binomial_data, <span class="at">epsilon =</span> <span class="fl">1e-5</span>, <span class="at">cost =</span> logistic_loss,</span>
+<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a>  <span class="at">cost_gradient =</span> logistic_gradient, <span class="at">cost_hessian =</span> logistic_hessian,</span>
+<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
+<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a>)</span>
+<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a><span class="fu">summary</span>(result)</span>
+<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
+<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a><span class="co">#&gt; fastcpd(formula = y ~ . - 1, data = binomial_data, cost = logistic_loss,</span></span>
+<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a><span class="co">#&gt;     cost_gradient = logistic_gradient, cost_hessian = logistic_hessian,</span></span>
+<span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a><span class="co">#&gt;     epsilon = 1e-05, r.progress = FALSE)</span></span>
+<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-73"><a href="#cb4-73" tabindex="-1"></a><span class="co">#&gt; Change points:</span></span>
+<span id="cb4-74"><a href="#cb4-74" tabindex="-1"></a><span class="co">#&gt; 22 125</span></span>
+<span id="cb4-75"><a href="#cb4-75" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-76"><a href="#cb4-76" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
+<span id="cb4-77"><a href="#cb4-77" tabindex="-1"></a><span class="co">#&gt;   segment 1  segment 2 segment 3</span></span>
+<span id="cb4-78"><a href="#cb4-78" tabindex="-1"></a><span class="co">#&gt; 1 -59.20045  0.8170446  1.902379</span></span>
+<span id="cb4-79"><a href="#cb4-79" tabindex="-1"></a><span class="co">#&gt; 2 -34.56676 -0.9600438  2.751578</span></span>
+<span id="cb4-80"><a href="#cb4-80" tabindex="-1"></a><span class="co">#&gt; 3 216.53373  0.9353306  3.734179</span></span>
+<span id="cb4-81"><a href="#cb4-81" tabindex="-1"></a><span class="co">#&gt; 4 -80.96420 -0.7393653  2.247423</span></span>
+<span id="cb4-82"><a href="#cb4-82" tabindex="-1"></a><span class="co">#&gt; 5  51.25224  0.1390591  2.535372</span></span></code></pre></div>
 </div>
 
 

@@ -7,8 +7,8 @@ knitr::opts_chunk$set(
 ## ----package_installation-----------------------------------------------------
 for (
   package in c(
-    "ggplot2", "mvtnorm",
     # "bcp",
+    "ggplot2", "mvtnorm",
     "breakfast", "changepoint", "cpm", "CptNonPar", "ecp", "fpop", "gfpop",
     "InspectChangepoint", "jointseg", "mcp", "mosum", "not", "Rbeast",
     "segmented", "stepR", "strucchange", "VARDetect", "wbs"
@@ -204,13 +204,13 @@ fastcpd::fastcpd.mean(mean_data_1, r.progress = FALSE)@cp_set
 ## ----univariate-mean-change-CptNonPar-----------------------------------------
 CptNonPar::np.mojo(mean_data_1, G = floor(length(mean_data_1) / 6))$cpts
 
-## ----univariate-mean-change-strucchange---------------------------------------
-# Slow
-strucchange::breakpoints(y ~ 1, data = data.frame(y = mean_data_1))$breakpoints
+## ----univariate-mean-change-strucchange, eval = FALSE-------------------------
+#  strucchange::breakpoints(y ~ 1, data = data.frame(y = mean_data_1))$breakpoints
+#  #> [1] 300 700
 
-## ----univariate-mean-change-ecp-----------------------------------------------
-# Slower
-ecp::e.divisive(mean_data_1)$estimates
+## ----univariate-mean-change-ecp, eval = FALSE---------------------------------
+#  ecp::e.divisive(mean_data_1)$estimates
+#  #> [1]    1  301  701 1001
 
 ## ----univariate-mean-change-changepoint---------------------------------------
 # Data need to be processed
@@ -260,9 +260,9 @@ result_InspectChangepoint$changepoints[, "location"]
 jointseg::jointSeg(mean_data_1, K = 2)$bestBkp
 
 ## ----univariate-mean-change-Rbeast--------------------------------------------
-Rbeast::beast(
-  mean_data_1, season = "none", print.progress = FALSE, quiet = TRUE
-)$trend$cp
+# Rbeast::beast(
+#   mean_data_1, season = "none", print.progress = FALSE, quiet = TRUE
+# )$trend$cp
 
 ## ----univariate-mean-change-stepR---------------------------------------------
 stepR::stepFit(mean_data_1, alpha = 0.5)$rightEnd
@@ -277,7 +277,6 @@ segmented::segmented(
 )$psi[, "Est."]
 
 ## ----univariate-mean-change-mcp-----------------------------------------------
-# Slowest
 if (interactive()) {
   plot(
     mcp::mcp(
@@ -297,9 +296,9 @@ plot(not::not(mean_data_1, contrast = "pcwsConstMean"))
 ## ----univariate-mean-and-or-variance-change-fastcpd---------------------------
 fastcpd::fastcpd.mv(mv_data_1, r.progress = FALSE)@cp_set
 
-## ----univariate-mean-and-or-variance-change-ecp-------------------------------
-# Slow
-ecp::e.divisive(mv_data_1)$estimates
+## ----univariate-mean-and-or-variance-change-ecp, eval = FALSE-----------------
+#  ecp::e.divisive(mv_data_1)$estimates
+#  #> [1]    1  301  701 1001 1301 1701 2001
 
 ## ----univariate-mean-and-or-variance-change-changepoint-----------------------
 # Data need to be processed
@@ -327,12 +326,11 @@ invisible(
 result_InspectChangepoint$changepoints[, "location"]
 
 ## ----univariate-mean-and-or-variance-change-Rbeast----------------------------
-Rbeast::beast(
-  mv_data_1, season = "none", print.progress = FALSE, quiet = TRUE
-)$trend$cp
+# Rbeast::beast(
+#   mv_data_1, season = "none", print.progress = FALSE, quiet = TRUE
+# )$trend$cp
 
 ## ----univariate-mean-and-or-variance-change-mcp-------------------------------
-# Slower
 if (interactive()) {
   plot(
     mcp::mcp(
@@ -371,26 +369,26 @@ result_InspectChangepoint$changepoints[, "location"]
 jointseg::jointSeg(mean_data_3, K = 2)$bestBkp
 
 ## ----multivariate-mean-change-Rbeast------------------------------------------
-invisible(
-  capture.output(
-    result_Rbeast <- Rbeast::beast123(
-      mean_data_3,
-      metadata = list(whichDimIsTime = 1),
-      season = "none"
-    )
-  )
-)
-result_Rbeast$trend$cp
+# invisible(
+#   capture.output(
+#     result_Rbeast <- Rbeast::beast123(
+#       mean_data_3,
+#       metadata = list(whichDimIsTime = 1),
+#       season = "none"
+#     )
+#   )
+# )
+# result_Rbeast$trend$cp
 
-## ----multivariate-mean-change-strucchange-------------------------------------
-# Slow
-strucchange::breakpoints(
-  cbind(y.1, y.2, y.3) ~ 1, data = data.frame(y = mean_data_3)
-)$breakpoints
+## ----multivariate-mean-change-strucchange, eval = FALSE-----------------------
+#  strucchange::breakpoints(
+#    cbind(y.1, y.2, y.3) ~ 1, data = data.frame(y = mean_data_3)
+#  )$breakpoints
+#  #> [1] 300 700
 
-## ----multivariate-mean-change-ecp---------------------------------------------
-# Slower
-ecp::e.divisive(mean_data_3)$estimates
+## ----multivariate-mean-change-ecp, eval = FALSE-------------------------------
+#  ecp::e.divisive(mean_data_3)$estimates
+#  #> [1]    1  301  701 1001
 
 ## ----multivariate-mean-change-bcp---------------------------------------------
 # plot(bcp::bcp(mean_data_3))
@@ -398,9 +396,9 @@ ecp::e.divisive(mean_data_3)$estimates
 ## ----multivariate-mean-and-or-variance-change-fastcpd-------------------------
 fastcpd::fastcpd.mv(mv_data_3, r.progress = FALSE)@cp_set
 
-## ----multivariate-mean-and-or-variance-change-ecp-----------------------------
-# Slow
-ecp::e.divisive(mv_data_3)$estimates
+## ----multivariate-mean-and-or-variance-change-ecp, eval = FALSE---------------
+#  ecp::e.divisive(mv_data_3)$estimates
+#  #> [1]    1  301  701 1001 1301 1701 2001
 
 ## ----multivariate-mean-and-or-variance-change-InspectChangepoint--------------
 invisible(
@@ -418,22 +416,23 @@ invisible(
 result_InspectChangepoint$changepoints[, "location"]
 
 ## ----multivariate-mean-and-or-variance-change-Rbeast--------------------------
-invisible(
-  capture.output(
-    result_Rbeast <- Rbeast::beast123(
-      mv_data_3,
-      metadata = list(whichDimIsTime = 1),
-      season = "none"
-    )
-  )
-)
-result_Rbeast$trend$cp
+# invisible(
+#   capture.output(
+#     result_Rbeast <- Rbeast::beast123(
+#       mv_data_3,
+#       metadata = list(whichDimIsTime = 1),
+#       season = "none"
+#     )
+#   )
+# )
+# result_Rbeast$trend$cp
 
 ## ----linear-regression-fastcpd------------------------------------------------
 fastcpd::fastcpd.lm(lm_data, r.progress = FALSE)@cp_set
 
-## ----linear-regression-strucchange--------------------------------------------
-strucchange::breakpoints(y ~ . - 1, data = lm_data)$breakpoints
+## ----linear-regression-strucchange, eval = FALSE------------------------------
+#  strucchange::breakpoints(y ~ . - 1, data = lm_data)$breakpoints
+#  #> [1] 100 201
 
 ## ----linear-regression-segmented----------------------------------------------
 segmented::segmented(
@@ -447,22 +446,23 @@ segmented::segmented(
 ## ----logistic-regression-fastcpd----------------------------------------------
 fastcpd::fastcpd.binomial(binomial_data, r.progress = FALSE)@cp_set
 
-## ----logistic-regression-strucchange------------------------------------------
-strucchange::breakpoints(y ~ . - 1, data = binomial_data)$breakpoints
+## ----logistic-regression-strucchange, eval = FALSE----------------------------
+#  strucchange::breakpoints(y ~ . - 1, data = binomial_data)$breakpoints
+#  #> [1] 297
 
 ## ----poisson-regression-fastcpd-----------------------------------------------
 fastcpd::fastcpd.poisson(poisson_data, r.progress = FALSE)@cp_set
 
-## ----poisson-regression-strucchange-------------------------------------------
-# Slow
-strucchange::breakpoints(y ~ . - 1, data = poisson_data)$breakpoints
+## ----poisson-regression-strucchange, eval = FALSE-----------------------------
+#  strucchange::breakpoints(y ~ . - 1, data = poisson_data)$breakpoints
+#  #> [1] 935
 
 ## ----lasso-fastcpd------------------------------------------------------------
 fastcpd::fastcpd.lasso(lasso_data, r.progress = FALSE)@cp_set
 
-## ----lasso-strucchange--------------------------------------------------------
-# Slow
-strucchange::breakpoints(y ~ . - 1, data = lasso_data)$breakpoints
+## ----lasso-strucchange, eval = FALSE------------------------------------------
+#  strucchange::breakpoints(y ~ . - 1, data = lasso_data)$breakpoints,
+#  #> [1]  80 200 321
 
 ## ----ar3-fastcpd--------------------------------------------------------------
 fastcpd::fastcpd.ar(ar_data, 3, r.progress = FALSE)@cp_set
@@ -479,7 +479,6 @@ segmented::segmented(
 )$psi[, "Est."]
 
 ## ----ar3-mcp------------------------------------------------------------------
-# Slow
 if (interactive()) {
   plot(
     mcp::mcp(
@@ -496,8 +495,9 @@ fastcpd::fastcpd.garch(garch_data, c(1, 1), r.progress = FALSE)@cp_set
 ## ----garch11-CptNonPar--------------------------------------------------------
 CptNonPar::np.mojo(garch_data, G = floor(length(garch_data) / 6))$cpts
 
-## ----garch11-strucchange------------------------------------------------------
-strucchange::breakpoints(x ~ 1, data = data.frame(x = garch_data))$breakpoints
+## ----garch11-strucchange, eval = FALSE----------------------------------------
+#  strucchange::breakpoints(x ~ 1, data = data.frame(x = garch_data))$breakpoints
+#  #> [1] NA
 
 ## ----var2-fastcpd-------------------------------------------------------------
 fastcpd::fastcpd.var(
@@ -668,8 +668,8 @@ VARDetect::tbss(var_data)
 #  )
 #  for (
 #    package in c(
-#      "ggplot2", "mvtnorm",
 #      # "bcp",
+#      "ggplot2", "mvtnorm",
 #      "breakfast", "changepoint", "cpm", "CptNonPar", "ecp", "fpop", "gfpop",
 #      "InspectChangepoint", "jointseg", "mcp", "mosum", "not", "Rbeast",
 #      "segmented", "stepR", "strucchange", "VARDetect", "wbs"
@@ -838,10 +838,10 @@ VARDetect::tbss(var_data)
 #  plot.ts(var_data)
 #  fastcpd::fastcpd.mean(mean_data_1, r.progress = FALSE)@cp_set
 #  CptNonPar::np.mojo(mean_data_1, G = floor(length(mean_data_1) / 6))$cpts
-#  # Slow
 #  strucchange::breakpoints(y ~ 1, data = data.frame(y = mean_data_1))$breakpoints
-#  # Slower
+#  #> [1] 300 700
 #  ecp::e.divisive(mean_data_1)$estimates
+#  #> [1]    1  301  701 1001
 #  # Data need to be processed
 #  changepoint::cpt.mean(c(mean_data_1))@cpts
 #  breakfast::breakfast(mean_data_1)$cptmodel.list[[6]]$cpts
@@ -873,16 +873,15 @@ VARDetect::tbss(var_data)
 #  )
 #  result_InspectChangepoint$changepoints[, "location"]
 #  jointseg::jointSeg(mean_data_1, K = 2)$bestBkp
-#  Rbeast::beast(
-#    mean_data_1, season = "none", print.progress = FALSE, quiet = TRUE
-#  )$trend$cp
+#  # Rbeast::beast(
+#  #   mean_data_1, season = "none", print.progress = FALSE, quiet = TRUE
+#  # )$trend$cp
 #  stepR::stepFit(mean_data_1, alpha = 0.5)$rightEnd
 #  cpm::processStream(mean_data_1, cpmType = "Student")$changePoints
 #  segmented::segmented(
 #    lm(y ~ 1 + x, data.frame(y = mean_data_1, x = seq_len(nrow(mean_data_1)))),
 #    seg.Z = ~ x
 #  )$psi[, "Est."]
-#  # Slowest
 #  if (interactive()) {
 #    plot(
 #      mcp::mcp(
@@ -895,8 +894,8 @@ VARDetect::tbss(var_data)
 #  plot(not::not(mean_data_1, contrast = "pcwsConstMean"))
 #  # plot(bcp::bcp(mean_data_1))
 #  fastcpd::fastcpd.mv(mv_data_1, r.progress = FALSE)@cp_set
-#  # Slow
 #  ecp::e.divisive(mv_data_1)$estimates
+#  #> [1]    1  301  701 1001 1301 1701 2001
 #  # Data need to be processed
 #  changepoint::cpt.meanvar(c(mv_data_1))@cpts
 #  CptNonPar::np.mojo(mv_data_1, G = floor(length(mv_data_1) / 6))$cpts
@@ -914,10 +913,9 @@ VARDetect::tbss(var_data)
 #    )
 #  )
 #  result_InspectChangepoint$changepoints[, "location"]
-#  Rbeast::beast(
-#    mv_data_1, season = "none", print.progress = FALSE, quiet = TRUE
-#  )$trend$cp
-#  # Slower
+#  # Rbeast::beast(
+#  #   mv_data_1, season = "none", print.progress = FALSE, quiet = TRUE
+#  # )$trend$cp
 #  if (interactive()) {
 #    plot(
 #      mcp::mcp(
@@ -944,26 +942,26 @@ VARDetect::tbss(var_data)
 #  )
 #  result_InspectChangepoint$changepoints[, "location"]
 #  jointseg::jointSeg(mean_data_3, K = 2)$bestBkp
-#  invisible(
-#    capture.output(
-#      result_Rbeast <- Rbeast::beast123(
-#        mean_data_3,
-#        metadata = list(whichDimIsTime = 1),
-#        season = "none"
-#      )
-#    )
-#  )
-#  result_Rbeast$trend$cp
-#  # Slow
+#  # invisible(
+#  #   capture.output(
+#  #     result_Rbeast <- Rbeast::beast123(
+#  #       mean_data_3,
+#  #       metadata = list(whichDimIsTime = 1),
+#  #       season = "none"
+#  #     )
+#  #   )
+#  # )
+#  # result_Rbeast$trend$cp
 #  strucchange::breakpoints(
 #    cbind(y.1, y.2, y.3) ~ 1, data = data.frame(y = mean_data_3)
 #  )$breakpoints
-#  # Slower
+#  #> [1] 300 700
 #  ecp::e.divisive(mean_data_3)$estimates
+#  #> [1]    1  301  701 1001
 #  # plot(bcp::bcp(mean_data_3))
 #  fastcpd::fastcpd.mv(mv_data_3, r.progress = FALSE)@cp_set
-#  # Slow
 #  ecp::e.divisive(mv_data_3)$estimates
+#  #> [1]    1  301  701 1001 1301 1701 2001
 #  invisible(
 #    suppressMessages(
 #      capture.output(
@@ -977,18 +975,19 @@ VARDetect::tbss(var_data)
 #    )
 #  )
 #  result_InspectChangepoint$changepoints[, "location"]
-#  invisible(
-#    capture.output(
-#      result_Rbeast <- Rbeast::beast123(
-#        mv_data_3,
-#        metadata = list(whichDimIsTime = 1),
-#        season = "none"
-#      )
-#    )
-#  )
-#  result_Rbeast$trend$cp
+#  # invisible(
+#  #   capture.output(
+#  #     result_Rbeast <- Rbeast::beast123(
+#  #       mv_data_3,
+#  #       metadata = list(whichDimIsTime = 1),
+#  #       season = "none"
+#  #     )
+#  #   )
+#  # )
+#  # result_Rbeast$trend$cp
 #  fastcpd::fastcpd.lm(lm_data, r.progress = FALSE)@cp_set
 #  strucchange::breakpoints(y ~ . - 1, data = lm_data)$breakpoints
+#  #> [1] 100 201
 #  segmented::segmented(
 #    lm(
 #      y ~ . - 1,
@@ -998,12 +997,13 @@ VARDetect::tbss(var_data)
 #  )$psi[, "Est."]
 #  fastcpd::fastcpd.binomial(binomial_data, r.progress = FALSE)@cp_set
 #  strucchange::breakpoints(y ~ . - 1, data = binomial_data)$breakpoints
+#  #> [1] 297
 #  fastcpd::fastcpd.poisson(poisson_data, r.progress = FALSE)@cp_set
-#  # Slow
 #  strucchange::breakpoints(y ~ . - 1, data = poisson_data)$breakpoints
+#  #> [1] 935
 #  fastcpd::fastcpd.lasso(lasso_data, r.progress = FALSE)@cp_set
-#  # Slow
-#  strucchange::breakpoints(y ~ . - 1, data = lasso_data)$breakpoints
+#  strucchange::breakpoints(y ~ . - 1, data = lasso_data)$breakpoints,
+#  #> [1]  80 200 321
 #  fastcpd::fastcpd.ar(ar_data, 3, r.progress = FALSE)@cp_set
 #  CptNonPar::np.mojo(ar_data, G = floor(length(ar_data) / 6))$cpts
 #  segmented::segmented(
@@ -1012,7 +1012,6 @@ VARDetect::tbss(var_data)
 #    ),
 #    seg.Z = ~ x
 #  )$psi[, "Est."]
-#  # Slow
 #  if (interactive()) {
 #    plot(
 #      mcp::mcp(
@@ -1025,6 +1024,7 @@ VARDetect::tbss(var_data)
 #  fastcpd::fastcpd.garch(garch_data, c(1, 1), r.progress = FALSE)@cp_set
 #  CptNonPar::np.mojo(garch_data, G = floor(length(garch_data) / 6))$cpts
 #  strucchange::breakpoints(x ~ 1, data = data.frame(x = garch_data))$breakpoints
+#  #> [1] NA
 #  fastcpd::fastcpd.var(
 #    var_data, 2, cost_adjustment = NULL, r.progress = FALSE
 #  )@cp_set

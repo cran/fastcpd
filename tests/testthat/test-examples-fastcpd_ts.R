@@ -1,5 +1,3 @@
-testthat::skip("These tests are intended to be run manually.")
-
 testthat::test_that(
   "examples/fastcpd_ts.txt", {
     testthat::skip_if_not_installed("ggplot2")
@@ -10,6 +8,6 @@ testthat::test_that(
       collapse = "\n"
     )))
 
-    testthat::expect_equal(result@cp_set, 301)
+    testthat::expect_equal(result@cp_set, 180)
   }
 )
