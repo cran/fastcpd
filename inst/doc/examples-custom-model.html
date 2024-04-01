@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -349,12 +349,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 functions and show that the results are similar to the built-in logistic
 regression models.</p>
 <p>The built-in logistic regression model in <code>fastcpd()</code> is
-implemented with the help of the <strong>fastcpd</strong> package
-<strong>fastglm</strong>. The <strong>fastcpd</strong> package utilizes
-the iteratively reweighted least squares with the step-halving approach
-to help safeguard against convergence issues. If a custom cost function
-is used with gradient descent, we should expect the results may not be
-the exact same as the built-in logistic regression model.</p>
+implemented with the help of the <strong>fastglm</strong> package. The
+<strong>fastglm</strong> package utilizes the iteratively reweighted
+least squares with the step-halving approach to help safeguard against
+convergence issues. If a custom cost function is used with gradient
+descent, we should expect the results will be similar to the built-in
+logistic regression model.</p>
 <p>Specifying the <code>cost</code>, <code>cost_gradient</code> and
 <code>cost_hessian</code> parameters below, we can obtain similar
 results as the built-in logistic regression model.</p>
@@ -437,7 +437,7 @@ results as the built-in logistic regression model.</p>
 inferior compared to the one obtained through built-in models. We remark
 that the results can be improved with extra parameters already provided
 in the package. The detailed discussion of several advanced usages of
-the package can be found in <a href="https://fastcpd.xingchi.li/articles/examples-advanced.html">Advanced
+the package can be found in <a href="examples-advanced.html">Advanced
 examples</a>.</p>
 <div id="appendix-all-code-snippets" class="section level1">
 <h1>Appendix: all code snippets</h1>

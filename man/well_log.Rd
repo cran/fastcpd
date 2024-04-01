@@ -3,7 +3,8 @@
 \docType{data}
 \name{well_log}
 \alias{well_log}
-\title{Well-log Dataset from Numerical Bayesian Methods Applied to Signal Processing}
+\title{Well-log Dataset from Numerical Bayesian Methods Applied to
+Signal Processing}
 \format{
 A Time-Series of length 3989.
 }
@@ -14,9 +15,9 @@ A Time-Series of length 3989.
 well_log
 }
 \description{
-This is the well-known well-log dataset used in many changepoint papers
-obtained from Alan Turing Institute GitHub repository and licensed under
-the MIT license. Outliers with value less or equal to 1e5 are removed.
+This is the well-known well-log dataset used in many changepoint
+papers obtained from Alan Turing Institute GitHub repository and licensed
+under the MIT license. Outliers with value less or equal to 1e5 are removed.
 }
 \examples{
 if (!requireNamespace("ggplot2", quietly = TRUE)) utils::install.packages(
@@ -62,22 +63,10 @@ for (segment_index in seq_along(segment_starts)) {
   residual <- c(residual, segment - median(segment))
 }
 
-p <- ggplot2::ggplot() +
-  ggplot2::geom_vline(xintercept = result@cp_set, color = "red") +
-  ggplot2::geom_point(
-    data = data.frame(
-      x = seq_along(well_log), y = c(well_log), label = "well_log"
-    ),
-    ggplot2::aes(x = x, y = y)
-  ) +
-  ggplot2::geom_point(
-    data = data.frame(
-      x = seq_along(residual), y = residual, label = "residuals"
-    ),
-    ggplot2::aes(x = x, y = y)
-  ) +
-  ggplot2::facet_wrap("label", nrow = 2, scales = "free_y")
-print(p)
+result@residuals <- residual
+result@family <- "mean"
+result@data <- data.frame(x = c(well_log))
+plot(result)
 }
 }
 \keyword{datasets}

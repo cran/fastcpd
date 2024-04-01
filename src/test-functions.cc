@@ -1,5 +1,5 @@
 #include "fastcpd_classes.h"
-#include "fastcpd_constants.h"
+#include "fastcpd_test_constants.h"
 #include "testthat.h"
 
 context("negative_log_likelihood_wo_theta Unit Test") {
@@ -21,7 +21,6 @@ context("negative_log_likelihood_wo_theta Unit Test") {
       /* momentum_coef */ 0.0,
       /* order */ colvec({3, 2}),
       /* p */ 0,
-      /* pruning */ true,
       /* p_response */ 0,
       /* r_progress */ false,
       /* segment_count */ 0,
@@ -33,12 +32,13 @@ context("negative_log_likelihood_wo_theta Unit Test") {
     );
 
     const colvec data(kARMA32.data(), kARMA32.size());
-    const List out = fastcpd_class.negative_log_likelihood_wo_theta(
+    const fastcpd::classes::CostResult cost_result =
+    fastcpd_class.negative_log_likelihood_wo_theta(
       data, 0, false, R_NilValue
     );
-    const colvec par = out["par"];
-    const double value = out["value"];
-    const colvec residuals = out["residuals"];
+    const colvec par = cost_result.par;
+    const double value = cost_result.value;
+    const colvec residuals = cost_result.residuals;
 
     // Expected values obtained from the following R code
     // arima(x, order = c(3, 0, 2), include.mean = FALSE)
@@ -73,7 +73,6 @@ context("negative_log_likelihood_wo_cv Unit Test") {
       /* momentum_coef */ 0.0,
       /* order */ colvec({3, 2}),
       /* p */ 0,
-      /* pruning */ true,
       /* p_response */ 0,
       /* r_progress */ false,
       /* segment_count */ 0,
@@ -112,7 +111,6 @@ context("cost_update_gradient Unit Test") {
       /* momentum_coef */ 0.0,
       /* order */ colvec({3, 2}),
       /* p */ 0,
-      /* pruning */ true,
       /* p_response */ 0,
       /* r_progress */ false,
       /* segment_count */ 0,
@@ -151,7 +149,6 @@ context("cost_update_hessian Unit Test") {
       /* momentum_coef */ 0.0,
       /* order */ colvec(),
       /* p */ 0,
-      /* pruning */ true,
       /* p_response */ 0,
       /* r_progress */ false,
       /* segment_count */ 0,
@@ -188,7 +185,6 @@ context("cost_update_hessian Unit Test") {
       /* momentum_coef */ 0.0,
       /* order */ colvec(),
       /* p */ 0,
-      /* pruning */ true,
       /* p_response */ 0,
       /* r_progress */ false,
       /* segment_count */ 0,
@@ -225,7 +221,6 @@ context("cost_update_hessian Unit Test") {
       /* momentum_coef */ 0.0,
       /* order */ colvec({3, 2}),
       /* p */ 0,
-      /* pruning */ true,
       /* p_response */ 0,
       /* r_progress */ false,
       /* segment_count */ 0,
@@ -270,7 +265,6 @@ context("update_theta_sum Unit Test") {
       /* momentum_coef */ 0.0,
       /* order */ colvec(),
       /* p */ 3,
-      /* pruning */ true,
       /* p_response */ 0,
       /* r_progress */ false,
       /* segment_count */ 0,

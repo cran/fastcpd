@@ -5,6 +5,56 @@
 
 namespace fastcpd::classes {
 
+struct ColMat {
+  mat data;
+
+  operator colvec() const;
+  operator mat() const;
+  operator rowvec() const;
+};
+
+struct CostResult {
+  ColMat par;
+  ColMat residuals;
+  double value;
+};
+
+class CostFunction {
+ public:
+  CostFunction(Function cost);
+
+  CostResult operator()(
+      mat data,
+      Nullable<colvec> theta,
+      double lambda,  // UNUSED
+      bool cv,  // UNUSED
+      Nullable<colvec> start  // UNUSED
+  );
+
+ private:
+  Function cost;
+};
+
+class CostGradient {
+ public:
+  CostGradient(Function cost_gradient);
+
+  colvec operator()(mat data, colvec theta);
+
+ private:
+  Function cost_gradient;
+};
+
+class CostHessian {
+ public:
+  CostHessian(Function cost_hessian);
+
+  mat operator()(mat data, colvec theta);
+
+ private:
+  Function cost_hessian;
+};
+
 class Fastcpd {
  public:
   Fastcpd(
@@ -24,7 +74,6 @@ class Fastcpd {
     const double momentum_coef,
     const colvec order,
     const int p,
-    const bool pruning,
     const unsigned int p_response,
     const bool r_progress,
     const int segment_count,
@@ -59,7 +108,7 @@ class Fastcpd {
   // Get the value of \code{theta_sum}.
   mat get_theta_sum();
 
-  List negative_log_likelihood_wo_theta(
+  CostResult negative_log_likelihood_wo_theta(
       mat data,
       double lambda,
       bool cv,
@@ -78,9 +127,8 @@ class Fastcpd {
   void update_theta_sum(const unsigned int col, colvec new_theta_sum);
 
  private:
-
   // Adjust cost value for MBIC and MDL.
-  double adjust_cost_value(double value, const unsigned int nrows);
+  double update_cost_value(double value, const unsigned int nrows);
 
   void create_cost_function_wrapper(Nullable<Function> cost);
   void create_cost_gradient_wrapper(Nullable<Function> cost_gradient);
@@ -98,13 +146,36 @@ class Fastcpd {
 
   double get_cost_adjustment_value(const unsigned nrows);
 
+  double get_cval_for_r_t_set(
+    const ucolvec r_t_set,
+    const unsigned int i,
+    const int t,
+    double lambda
+  );
+
+  double get_cval_pelt(
+    const mat data_segment,
+    const unsigned int i,
+    const int t,
+    const int tau,
+    const double lambda
+  );
+
+  double get_cval_sen(
+    const mat data_segment,
+    const unsigned int i,
+    const int t,
+    const int tau,
+    const double lambda
+  );
+
   // Update \code{theta_hat}, \code{theta_sum}, and \code{hessian}.
   //
   // @param data_segment A data frame containing a segment of the data.
   //
   // @return A list containing new values of \code{theta_hat}, \code{theta_sum},
   //   and \code{hessian}.
-  List get_optimized_cost(const mat data_segment);
+  CostResult get_optimized_cost(const mat data_segment);
 
   // Solve logistic/poisson regression using Gradient Descent Extension to the
   // multivariate case
@@ -112,23 +183,24 @@ class Fastcpd {
   // @param data A data frame containing the data to be segmented.
   // @param theta Estimate of the parameters. If null, the function will
   //   estimate the parameters.
-  // @param family Family of the model.
   // @param lambda Lambda for L1 regularization. Only used for lasso.
   // @param cv Whether to perform cross-validation to find the best lambda.
   // @param start Starting point for the optimization for warm start.
-  // @param order Order of the time series models.
-  // @param variance_estimate Covariance matrix of the data,
   //   only used in mean change and lm.
   //
   // @return Negative log likelihood of the corresponding data with the given
   //   family.
-  List negative_log_likelihood(
+  CostResult get_cost_result(
       mat data,
       Nullable<colvec> theta,
       double lambda,
       bool cv = false,
       Nullable<colvec> start = R_NilValue
   );
+
+  List get_cp_set(const colvec raw_cp_set, const double lambda);
+
+  colvec update_cp_set(const colvec raw_cp_set);
 
   void update_cost_parameters(
       const unsigned int t,
@@ -188,6 +260,8 @@ class Fastcpd {
   // Update \code{hessian} for a specific slice.
   void update_hessian(const unsigned int slice, mat new_hessian);
 
+  void update_start(const unsigned int col, const colvec start_col);
+
   // Update \code{momentum}.
   void update_momentum(colvec new_momentum);
 
@@ -222,7 +296,7 @@ class Fastcpd {
 
   // Cost function. If the cost function is provided in R, this will be a
   // wrapper of the R function.
-  function<List(
+  function<CostResult(
       mat data,
       Nullable<colvec> theta,
       double lambda,
@@ -282,8 +356,6 @@ class Fastcpd {
   // `p` is the number of parameters to be estimated.
   const int p;
 
-  const bool pruning;
-
   // Number of response variables in regression.
   const unsigned int p_response;
 
@@ -298,6 +370,9 @@ class Fastcpd {
   // Create a matrix to store the estimated coefficients in each segment,
   // where each row represents estimated coefficients for a segment.
   mat segment_theta_hat;
+
+  // Matrix storing the warm starts.
+  mat start;
 
   // `theta_hat` stores the estimated coefficients up to the current data point.
   mat theta_hat;
@@ -319,42 +394,6 @@ class Fastcpd {
   const bool warm_start;
 };
 
-class CostFunction {
- public:
-  CostFunction(Function cost);
-
-  List operator()(
-      mat data,
-      Nullable<colvec> theta,
-      double lambda,  // UNUSED
-      bool cv,  // UNUSED
-      Nullable<colvec> start  // UNUSED
-  );
-
- private:
-  Function cost;
-};
-
-class CostGradient {
- public:
-  CostGradient(Function cost_gradient);
-
-  colvec operator()(mat data, colvec theta);
-
- private:
-  Function cost_gradient;
-};
-
-class CostHessian {
- public:
-  CostHessian(Function cost_hessian);
-
-  mat operator()(mat data, colvec theta);
-
- private:
-  Function cost_hessian;
-};
-
-}  // namespace fastcpd::parameters
+}  // namespace fastcpd::classes
 
 #endif  // FASTCPD_CLASSES_H_

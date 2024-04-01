@@ -1,6 +1,8 @@
 #ifndef FASTCPD_TYPES_H_
 #define FASTCPD_TYPES_H_
 
+#define ARMA_64BIT_WORD
+
 #include "RcppArmadillo.h"
 
 #ifdef DEBUG
@@ -46,6 +48,7 @@ using ::Rcpp::stop;
 using ::Rcpp::wrap;
 
 using ::arma::colvec;
+using ::arma::conv_to;
 using ::arma::cube;
 using ::arma::mat;
 using ::arma::rowvec;
@@ -58,6 +61,7 @@ using ::Rcpp::Function;
 using ::Rcpp::InternalFunction;
 using ::Rcpp::List;
 using ::Rcpp::Nullable;
+using ::Rcpp::NumericMatrix;
 using ::Rcpp::NumericVector;
 using ::Rcpp::S4;
 using ::std::function;

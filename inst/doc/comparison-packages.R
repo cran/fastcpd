@@ -7,9 +7,9 @@ knitr::opts_chunk$set(
 ## ----package_installation-----------------------------------------------------
 for (
   package in c(
-    # "bcp",
+    # "bcp", "gfpop",
     "ggplot2", "mvtnorm",
-    "breakfast", "changepoint", "cpm", "CptNonPar", "ecp", "fpop", "gfpop",
+    "breakfast", "changepoint", "cpm", "CptNonPar", "ecp", "fpop",
     "InspectChangepoint", "jointseg", "mcp", "mosum", "not", "Rbeast",
     "segmented", "stepR", "strucchange", "VARDetect", "wbs"
   )
@@ -232,14 +232,14 @@ if (interactive()) {
 fpop::Fpop(mean_data_1, nrow(mean_data_1))$t.est
 
 ## ----univariate-mean-change-gfpop---------------------------------------------
-gfpop::gfpop(
-  data = mean_data_1,
-  mygraph = gfpop::graph(
-    penalty = 2 * log(nrow(mean_data_1)) * gfpop::sdDiff(mean_data_1) ^ 2,
-    type = "updown"
-  ),
-  type = "mean"
-)$changepoints
+# gfpop::gfpop(
+#   data = mean_data_1,
+#   mygraph = gfpop::graph(
+#     penalty = 2 * log(nrow(mean_data_1)) * gfpop::sdDiff(mean_data_1) ^ 2,
+#     type = "updown"
+#   ),
+#   type = "mean"
+# )$changepoints
 
 ## ----univariate-mean-change-InspectChangepoint--------------------------------
 invisible(
@@ -521,14 +521,14 @@ VARDetect::tbss(var_data)
 #    wbs = wbs::wbs(well_log)$cpt$cpt.ic$mbic.penalty,
 #    mosum = mosum::mosum(c(well_log), G = 40)$cpts.info$cpts,
 #    # fpop = fpop::Fpop(well_log, length(well_log))$t.est,  # meaningless
-#    gfpop = gfpop::gfpop(
-#      data = well_log,
-#      mygraph = gfpop::graph(
-#        penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
-#        type = "updown"
-#      ),
-#      type = "mean"
-#    )$changepoints,
+#    # gfpop = gfpop::gfpop(
+#    #   data = well_log,
+#    #   mygraph = gfpop::graph(
+#    #     penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
+#    #     type = "updown"
+#    #   ),
+#    #   type = "mean"
+#    # )$changepoints,
 #    InspectChangepoint = InspectChangepoint::inspect(
 #      well_log,
 #      threshold = InspectChangepoint::compute.threshold(length(well_log), 1)
@@ -615,14 +615,14 @@ VARDetect::tbss(var_data)
 #    wbs = wbs::wbs(well_log),
 #    mosum = mosum::mosum(c(well_log), G = 40),
 #    fpop = fpop::Fpop(well_log, nrow(well_log)),
-#    gfpop = gfpop::gfpop(
-#      data = well_log,
-#      mygraph = gfpop::graph(
-#        penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
-#        type = "updown"
-#      ),
-#      type = "mean"
-#    ),
+#    # gfpop = gfpop::gfpop(
+#    #   data = well_log,
+#    #   mygraph = gfpop::graph(
+#    #     penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
+#    #     type = "updown"
+#    #   ),
+#    #   type = "mean"
+#    # ),
 #    InspectChangepoint = InspectChangepoint::inspect(
 #      well_log,
 #      threshold = InspectChangepoint::compute.threshold(length(well_log), 1)
@@ -668,9 +668,9 @@ VARDetect::tbss(var_data)
 #  )
 #  for (
 #    package in c(
-#      # "bcp",
+#      # "bcp", "gfpop",
 #      "ggplot2", "mvtnorm",
-#      "breakfast", "changepoint", "cpm", "CptNonPar", "ecp", "fpop", "gfpop",
+#      "breakfast", "changepoint", "cpm", "CptNonPar", "ecp", "fpop",
 #      "InspectChangepoint", "jointseg", "mcp", "mosum", "not", "Rbeast",
 #      "segmented", "stepR", "strucchange", "VARDetect", "wbs"
 #    )
@@ -851,14 +851,14 @@ VARDetect::tbss(var_data)
 #    mosum::mosum(c(mean_data_1), G = 40)$cpts.info$cpts
 #  }
 #  fpop::Fpop(mean_data_1, nrow(mean_data_1))$t.est
-#  gfpop::gfpop(
-#    data = mean_data_1,
-#    mygraph = gfpop::graph(
-#      penalty = 2 * log(nrow(mean_data_1)) * gfpop::sdDiff(mean_data_1) ^ 2,
-#      type = "updown"
-#    ),
-#    type = "mean"
-#  )$changepoints
+#  # gfpop::gfpop(
+#  #   data = mean_data_1,
+#  #   mygraph = gfpop::graph(
+#  #     penalty = 2 * log(nrow(mean_data_1)) * gfpop::sdDiff(mean_data_1) ^ 2,
+#  #     type = "updown"
+#  #   ),
+#  #   type = "mean"
+#  # )$changepoints
 #  invisible(
 #    suppressMessages(
 #      capture.output(
@@ -1042,14 +1042,14 @@ VARDetect::tbss(var_data)
 #    wbs = wbs::wbs(well_log)$cpt$cpt.ic$mbic.penalty,
 #    mosum = mosum::mosum(c(well_log), G = 40)$cpts.info$cpts,
 #    # fpop = fpop::Fpop(well_log, length(well_log))$t.est,  # meaningless
-#    gfpop = gfpop::gfpop(
-#      data = well_log,
-#      mygraph = gfpop::graph(
-#        penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
-#        type = "updown"
-#      ),
-#      type = "mean"
-#    )$changepoints,
+#    # gfpop = gfpop::gfpop(
+#    #   data = well_log,
+#    #   mygraph = gfpop::graph(
+#    #     penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
+#    #     type = "updown"
+#    #   ),
+#    #   type = "mean"
+#    # )$changepoints,
 #    InspectChangepoint = InspectChangepoint::inspect(
 #      well_log,
 #      threshold = InspectChangepoint::compute.threshold(length(well_log), 1)
@@ -1132,14 +1132,14 @@ VARDetect::tbss(var_data)
 #    wbs = wbs::wbs(well_log),
 #    mosum = mosum::mosum(c(well_log), G = 40),
 #    fpop = fpop::Fpop(well_log, nrow(well_log)),
-#    gfpop = gfpop::gfpop(
-#      data = well_log,
-#      mygraph = gfpop::graph(
-#        penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
-#        type = "updown"
-#      ),
-#      type = "mean"
-#    ),
+#    # gfpop = gfpop::gfpop(
+#    #   data = well_log,
+#    #   mygraph = gfpop::graph(
+#    #     penalty = 2 * log(length(well_log)) * gfpop::sdDiff(well_log) ^ 2,
+#    #     type = "updown"
+#    #   ),
+#    #   type = "mean"
+#    # ),
 #    InspectChangepoint = InspectChangepoint::inspect(
 #      well_log,
 #      threshold = InspectChangepoint::compute.threshold(length(well_log), 1)

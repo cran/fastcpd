@@ -7,8 +7,8 @@
 \format{
 A data frame with 1354 rows and 2 variables:
 \describe{
-  \item{date}{POSIXct,POSIXt (TZ: "UTC") from 2019-01-02 to 2023-10-28}
-  \item{price}{The average USD market price across major bitcoin exchanges}
+\item{date}{POSIXct,POSIXt (TZ: "UTC") from 2019-01-02 to 2023-10-28}
+\item{price}{The average USD market price across major bitcoin exchanges}
 }
 }
 \source{
@@ -35,6 +35,34 @@ result <- suppressWarnings(
 summary(result)
 bitcoin$date[result@cp_set + 200]
 plot(result)
+
+cp_dates <- bitcoin[200 + result@cp_set + 1, "date"]
+ggplot2::ggplot(
+  data = data.frame(
+    x = bitcoin$date[200:500], y = bitcoin$price[200:500]
+  ),
+  ggplot2::aes(x = x, y = y)
+) +
+  ggplot2::geom_line(color = "blue") +
+  ggplot2::geom_vline(
+    xintercept = cp_dates,
+    color = "red",
+    linetype = "dotted",
+    linewidth = 0.5,
+    alpha = 0.7
+  ) +
+  ggplot2::labs(
+    x = "Year",
+    y = "Bitcoin price in USD"
+  ) +
+  ggplot2::annotate(
+    "text",
+    x = cp_dates,
+    y = 200,
+    label = as.character(cp_dates),
+    color = "blue"
+  ) +
+  ggplot2::theme_bw()
 }
 }
 \keyword{datasets}
