@@ -13,7 +13,7 @@ testthat::test_that(
       family = "lasso",
       cp_set = 3,
       cost_values = c(9.5, 10.5),
-      residuals = rep(0, 4),
+      residuals = matrix(0, 4),
       thetas = thetas,
       cp_only = FALSE
     )
@@ -21,31 +21,9 @@ testthat::test_that(
     testthat::expect_error(
       mockthat::with_mock(
         `require_namespace` = function(...) FALSE,
-        `utils_menu` = function(...) 2,
         plot(class_instance)
       ),
       "ggplot2 is not installed. No plot is made."
-    )
-
-    testthat::expect_no_error(
-      mockthat::with_mock(
-        `require_namespace` = function(...) FALSE,
-        `utils_menu` = function(...) 1,
-        `install_packages` = function(...) TRUE,
-        plot(class_instance)
-      )
-    )
-
-    testthat::expect_error(
-      mockthat::with_mock(
-        `require_namespace` = function(...) FALSE,
-        `utils_menu` = function(...) 1,
-        `install_packages` = function(...) {
-          stop("ggplot2 could not be installed.")
-        },
-        plot(class_instance)
-      ),
-      "ggplot2 could not be installed."
     )
   }
 )
@@ -64,7 +42,7 @@ testthat::test_that(
       family = "lasso",
       cp_set = 3,
       cost_values = c(9.5, 10.5),
-      residuals = rep(0, 4),
+      residuals = matrix(0, 4),
       thetas = thetas,
       cp_only = FALSE
     )
@@ -145,7 +123,7 @@ testthat::test_that("output methods without change points", {
     family = "lasso",
     cp_set = numeric(0),
     cost_values = numeric(0),
-    residuals = numeric(0),
+    residuals = matrix(0),
     thetas = data.frame(matrix(NA, 0, 0)),
     cp_only = TRUE
   )
@@ -181,7 +159,7 @@ testthat::test_that("mean change p > 1", {
     family = "mean",
     cp_set = numeric(0),
     cost_values = numeric(0),
-    residuals = numeric(0),
+    residuals = matrix(0),
     thetas = data.frame(matrix(NA, 0, 0)),
     cp_only = FALSE
   )

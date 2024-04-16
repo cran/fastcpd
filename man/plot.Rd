@@ -88,12 +88,6 @@ No return value, called for plotting.
 Plot the data and the change points for a \linkS4class{fastcpd} object
 }
 \examples{
-for (package in c("ggplot2", "mvtnorm")) {
-  if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
-    package, repos = "https://cloud.r-project.org", quiet = TRUE
-  )
-}
-
 set.seed(1)
 p <- 1
 x <- mvtnorm::rmvnorm(300, rep(0, p), diag(p))
@@ -103,7 +97,10 @@ y <- c(
   x[101:200, ] * theta_0[2, ] + rnorm(100, 0, 1),
   x[201:300, ] * theta_0[3, ] + rnorm(100, 0, 1)
 )
-result <- fastcpd.lm(cbind(y, x))
+result <- fastcpd.lm(cbind(y, x), r.clock = "fastcpd_profiler")
 summary(result)
 plot(result)
+
+library(RcppClock)
+plot(fastcpd_profiler)
 }

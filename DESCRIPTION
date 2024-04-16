@@ -1,7 +1,7 @@
 Type: Package
 Package: fastcpd
 Title: Fast Change Point Detection via Sequential Gradient Descent
-Version: 0.13.1
+Version: 0.14.0
 Authors@R: c(
     person("Xingchi", "Li", , "anthony.li@stat.tamu.edu",
            role = c("aut", "cre", "cph"),
@@ -25,24 +25,24 @@ URL: https://fastcpd.xingchi.li, https://github.com/doccstat/fastcpd
 BugReports: https://github.com/doccstat/fastcpd/issues
 Depends: R (>= 2.10)
 Imports: fastglm, forecast, glmnet, Matrix, methods, Rcpp (>= 0.11.0),
-        stats, tseries, utils
-Suggests: abind, breakfast, changepoint, cpm, CptNonPar, ecp, fpop,
-        ggplot2, gridExtra, InspectChangepoint, jointseg, knitr,
-        lubridate, matrixStats, mcp, mockthat, mosum, mvtnorm, not,
-        numDeriv, Rbeast, rmarkdown, segmented, stepR, strucchange,
-        testthat (>= 3.0.0), VARDetect, wbs, xml2, zoo
-LinkingTo: progress, Rcpp, RcppArmadillo, testthat
+        stats, tseries
+Suggests: abind, breakfast, changepoint, cpm, CptNonPar, dplyr, fpop,
+        ggplot2, gridExtra, jointseg, knitr, lubridate, matrixStats,
+        mockthat, mvtnorm, not, numDeriv, RcppClock, reshape2,
+        rmarkdown, segmented, stepR, testthat (>= 3.0.0), VARDetect,
+        wbs, xml2, zoo
+LinkingTo: progress, Rcpp, RcppArmadillo, RcppClock, testthat
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/testthat/parallel: true
-Config/testthat/start-first: vignettes-comparison-pelt, fastcpd_ts
+Config/testthat/start-first: fastcpd_arima, fastcpd_ts
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1
 NeedsCompilation: yes
-Packaged: 2024-03-31 00:10:48 UTC; doccstat
+Packaged: 2024-04-15 17:47:21 UTC; doccstat
 Author: Xingchi Li [aut, cre, cph] (<https://orcid.org/0009-0006-2493-0853>),
   Xianyang Zhang [aut, cph]
 Maintainer: Xingchi Li <anthony.li@stat.tamu.edu>
 Repository: CRAN
-Date/Publication: 2024-04-01 15:50:06 UTC
+Date/Publication: 2024-04-16 06:20:09 UTC

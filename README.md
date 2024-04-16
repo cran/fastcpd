@@ -3,16 +3,17 @@
 
 # fastcpd <a href="https://fastcpd.xingchi.li"><img src="man/figures/logo.svg" align="right" height="138" /></a>
 
-[![CRAN
-status](https://www.r-pkg.org/badges/version-last-release/fastcpd)](https://cran.r-project.org/package=fastcpd)
-[![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/fastcpd)](https://cran.r-project.org/package=fastcpd)
-[![R-CMD-check](https://github.com/doccstat/fastcpd/workflows/R-CMD-check/badge.svg)](https://github.com/doccstat/fastcpd/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/doccstat/fastcpd/branch/main/graph/badge.svg)](https://app.codecov.io/gh/doccstat/fastcpd?branch=main)
+[![CodeFactor](https://www.codefactor.io/repository/github/doccstat/fastcpd/badge)](https://www.codefactor.io/repository/github/doccstat/fastcpd)
+[![CRAN
+status](https://www.r-pkg.org/badges/version-last-release/fastcpd)](https://cran.r-project.org/package=fastcpd)
+[![doi](https://img.shields.io/badge/doi-10.48550/arXiv.2404.05933-green.svg)](https://doi.org/10.48550/arXiv.2404.05933)
+[![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/fastcpd)](https://cran.r-project.org/package=fastcpd)
 [![Last
 Commit](https://img.shields.io/github/last-commit/doccstat/fastcpd)](https://github.com/doccstat/fastcpd)
+[![R-CMD-check](https://github.com/doccstat/fastcpd/workflows/R-CMD-check/badge.svg)](https://github.com/doccstat/fastcpd/actions)
 [![r-universe](https://doccstat.r-universe.dev/badges/fastcpd)](https://doccstat.r-universe.dev)
-[![CodeFactor](https://www.codefactor.io/repository/github/doccstat/fastcpd/badge)](https://www.codefactor.io/repository/github/doccstat/fastcpd)
 
 ## Overview
 
@@ -24,6 +25,8 @@ user specified cost function apart from the built-in cost functions.
 
 To learn more behind the algorithms:
 
+- [fastcpd: Fast Change Point Detection in
+  R](https://doi.org/10.48550/arXiv.2404.05933)
 - [Sequential Gradient Descent and Quasi-Newton’s Method for
   Change-Point
   Analysis](https://proceedings.mlr.press/v206/zhang23b.html)
@@ -167,7 +170,7 @@ summary(result)
 #> 614 
 #> 
 #> Cost values:
-#> 2757.324 2041.923 
+#> 2743.759 2028.588 
 #> 
 #> Parameters:
 #>     segment 1 segment 2
@@ -247,6 +250,8 @@ expected to see the progress bar when running the code by default.
 
 ### Utility functions
 
+#### Variance estimation
+
 - Variance estimation in ARMA models:
   [`variance_arma`](https://fastcpd.xingchi.li/reference/variance_arma.html)
 - Variance estimation in linear models:
@@ -255,6 +260,9 @@ expected to see the progress bar when running the code by default.
   [`variance_mean`](https://fastcpd.xingchi.li/reference/variance_mean.html)
 - Variance estimation in median change models:
   [`variance_median`](https://fastcpd.xingchi.li/reference/variance_median.html)
+
+#### Class methods
+
 - Plot: [`plot`](https://fastcpd.xingchi.li/reference/plot.html)
 - Print: [`print`](https://fastcpd.xingchi.li/reference/print.html)
 - Show: [`show`](https://fastcpd.xingchi.li/reference/show.html)

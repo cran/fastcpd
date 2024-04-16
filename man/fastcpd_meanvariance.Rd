@@ -33,23 +33,51 @@ default a matrix or data frame or a vector with each row / element as an
 observation and thus a formula is not required here.
 }
 \examples{
-if (!requireNamespace("mvtnorm", quietly = TRUE)) utils::install.packages(
-  "mvtnorm", repos = "https://cloud.r-project.org", quiet = TRUE
-)
-
 set.seed(1)
-p <- 3
+p <- 1
 result <- fastcpd.mv(
   rbind(
     mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
     mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
-    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(50, p)),
+    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(100, p)),
     mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
     mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
-    mvtnorm::rmvnorm(300, mean = rep(10, p), sigma = diag(50, p))
+    mvtnorm::rmvnorm(300, mean = rep(10, p), sigma = diag(100, p))
   )
 )
 summary(result)
+set.seed(1)
+p <- 4
+result <- fastcpd.mv(
+  rbind(
+    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
+    mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
+    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(100, p)),
+    mvtnorm::rmvnorm(300, mean = rep(0, p), sigma = diag(1, p)),
+    mvtnorm::rmvnorm(400, mean = rep(10, p), sigma = diag(1, p)),
+    mvtnorm::rmvnorm(300, mean = rep(10, p), sigma = diag(100, p))
+  )
+)
+summary(result)
+\donttest{
+set.seed(1)
+data <- c(rnorm(2000, 0, 1), rnorm(2000, 1, 1), rnorm(2000, 1, 2))
+(result_time <- system.time(
+  result <- fastcpd.variance(data, r.progress = FALSE, cp_only = TRUE)
+))
+result@cp_set
+}
+\donttest{
+set.seed(1)
+data <- c(rnorm(2000, 0, 1), rnorm(2000, 1, 1), rnorm(2000, 1, 2))
+(result_time <- system.time(
+  result <- fastcpd.variance(
+    data, beta = "BIC", cost_adjustment = "BIC",
+    r.progress = TRUE, cp_only = TRUE
+  )
+))
+result@cp_set
+}
 }
 \seealso{
 \code{\link[=fastcpd]{fastcpd()}}

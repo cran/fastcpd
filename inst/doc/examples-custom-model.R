@@ -2,13 +2,6 @@
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
 library(fastcpd)
 
-## ----package_installation-----------------------------------------------------
-#  for (package in c("ggplot2", "mvtnorm")) {
-#    if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
-#      package, repos = "https://cloud.r-project.org", quiet = TRUE
-#    )
-#  }
-
 ## ----fastcpd_binomial---------------------------------------------------------
 #  set.seed(1)
 #  x <- matrix(rnorm(1500, 0, 1), ncol = 5)
@@ -91,11 +84,6 @@ library(fastcpd)
 ## ----ref.label = knitr::all_labels(), echo = TRUE-----------------------------
 #  knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
 #  library(fastcpd)
-#  for (package in c("ggplot2", "mvtnorm")) {
-#    if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
-#      package, repos = "https://cloud.r-project.org", quiet = TRUE
-#    )
-#  }
 #  set.seed(1)
 #  x <- matrix(rnorm(1500, 0, 1), ncol = 5)
 #  theta <- rbind(rnorm(5, 0, 1), rnorm(5, 2, 1))

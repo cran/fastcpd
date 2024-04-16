@@ -66,12 +66,6 @@ Affymetrix HG-U95A and HG-U95Av2 microarrays
 }
 \examples{
 \donttest{
-for (package in c("ggplot2", "gridExtra")) {
-  if (!requireNamespace(package, quietly = TRUE)) utils::install.packages(
-    package, repos = "https://cloud.r-project.org", quiet = TRUE
-  )
-}
-
 result <- fastcpd.mean(transcriptome$"10", trim = 0.005)
 summary(result)
 plot(result)
@@ -90,7 +84,7 @@ plots <- lapply(
       ),
       ggplot2::aes(x = x, y = y)
     ) +
-      ggplot2::geom_line(color = "blue") +
+      ggplot2::geom_line(color = "steelblue") +
       ggplot2::geom_vline(
         xintercept = result_all@cp_set,
         color = "red",

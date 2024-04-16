@@ -1,3 +1,18 @@
+# fastcpd 0.14.0
+
+*   Correct mBIC.
+*   Add citation.
+
+# fastcpd 0.13.2
+
+*   Remove package check in examples.
+*   Use proper pruning coefficients for MBIC and MDL.
+*   Make residuals matrices.
+*   Use preprocess for faster mean change detection.
+*   Update examples demonstrating faster mean change.
+*   Replace comparison packages in vignettes with strange dependencies with
+    results and `eval = FALSE`.
+
 # fastcpd 0.13.1
 
 *   Default no pruning for `lasso`.

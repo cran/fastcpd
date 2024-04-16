@@ -26,10 +26,10 @@ default a matrix or data frame or a vector with each row / element as an
 observation and thus a formula is not required here.
 }
 \examples{
-if (!requireNamespace("mvtnorm", quietly = TRUE)) utils::install.packages(
-  "mvtnorm", repos = "https://cloud.r-project.org", quiet = TRUE
-)
-
+set.seed(1)
+data <- c(rnorm(300, 0, 1), rnorm(400, 0, 100), rnorm(300, 0, 1))
+result <- fastcpd.variance(data)
+summary(result)
 set.seed(1)
 p <- 3
 result <- fastcpd.variance(
@@ -40,6 +40,25 @@ result <- fastcpd.variance(
   )
 )
 summary(result)
+\donttest{
+set.seed(1)
+data <- c(rnorm(3000, 0, 1), rnorm(3000, 0, 2), rnorm(3000, 0, 1))
+(result_time <- system.time(
+  result <- fastcpd.variance(data, r.progress = FALSE, cp_only = TRUE)
+))
+result@cp_set
+}
+\donttest{
+set.seed(1)
+data <- c(rnorm(3000, 0, 1), rnorm(3000, 0, 2), rnorm(3000, 0, 1))
+(result_time <- system.time(
+  result <- fastcpd.variance(
+    data, beta = "BIC", cost_adjustment = "BIC",
+    r.progress = FALSE, cp_only = TRUE
+  )
+))
+result@cp_set
+}
 }
 \seealso{
 \code{\link[=fastcpd]{fastcpd()}}
