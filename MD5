@@ -1,6 +1,6 @@
-93879080e2a234536867813fe43bdb7a *DESCRIPTION
+b21e3fcddeb2e3f146db25d915a248e5 *DESCRIPTION
 21b9899979b648d2c534a82b5c0bf626 *NAMESPACE
-9cc390fda9fa78e25fefc0948db1158f *NEWS.md
+f105da6b217de6abf6f1acf09203a241 *NEWS.md
 24f01e357d0cf6ff80a0daa2272d8109 *R/RcppExports.R
 bcc49c181362812cd0ca44586b4c1d18 *R/catch-routine-registration.R
 c09e392e7e2122bc5f7dcf72325f7dd3 *R/check.R
@@ -9,7 +9,7 @@ b55be51ae699156a8560a7e84182a12d *R/fastcpd.R
 e72e6c4b72456abc6d06d306d43c4f51 *R/fastcpd_data.R
 d9904679ac2611d721cdcc136b481305 *R/fastcpd_wrappers.R
 9f7166f432481f37576204b10d04adbe *R/variance_estimation.R
-557b2ec83d12bb9b866a546e4236bbcb *README.md
+7991e68f5aec61b32148b83329bcd780 *README.md
 05fdb5d076311688643e4d0e92d8baca *build/vignette.rds
 5f64593b53e72aee1f4a46cfb22b16a9 *data/bitcoin.rda
 df7adcfefa20e6c79447a0254ec1b96c *data/occupancy.rda
@@ -17,9 +17,9 @@ df7adcfefa20e6c79447a0254ec1b96c *data/occupancy.rda
 7b78c20f6af3b8222a29194a5efde6a3 *data/uk_seatbelts.rda
 5316f710ac624f4b97946c84abc266ff *data/well_log.rda
 31e00947d02f5d3deaa96cf8af54b3ab *inst/CITATION
-1032397df12a74206ec3ebbfc7632a8c *inst/doc/comparison-packages.R
-7f1c4ee01f3407c2d67b08e7a4445a10 *inst/doc/comparison-packages.Rmd
-66b84b14ad033cffb07351c4d0570e20 *inst/doc/comparison-packages.html
+1b7c51c0f7ffbbd1382337a727b6a0e5 *inst/doc/comparison-packages.R
+6e3883976ce3ff92065532da13ee9209 *inst/doc/comparison-packages.Rmd
+1c8c8099bfa0782a42c52c7c730b4536 *inst/doc/comparison-packages.html
 d7cd9e305d2d0e132312fdbc6f2f91b6 *inst/doc/comparison-pelt.R
 675bd09bc368c83f540ebe52831df71f *inst/doc/comparison-pelt.Rmd
 0a682e4f4022dd3308dbeb2bb21413ea *inst/doc/comparison-pelt.html
@@ -161,7 +161,7 @@ c8320f198c5e5d656fa27d1c9ebd9619 *vignettes/comparison-packages-mean_data_3-bcp.
 37518b600db089f68ab6778cabb49777 *vignettes/comparison-packages-mv_data_1-mcp.svg
 4c1545fe646fbf09238d0850d253b398 *vignettes/comparison-packages-well_log-cpts.svg
 ec8c15844ec208227068d571128c06c3 *vignettes/comparison-packages-well_log-time.svg
-7f1c4ee01f3407c2d67b08e7a4445a10 *vignettes/comparison-packages.Rmd
+6e3883976ce3ff92065532da13ee9209 *vignettes/comparison-packages.Rmd
 675bd09bc368c83f540ebe52831df71f *vignettes/comparison-pelt.Rmd
 87778555d8da75a203960d6b2b6a0f58 *vignettes/examples-advanced.Rmd
 727286c07c95f2679130aa248ea83f6a *vignettes/examples-custom-model.Rmd

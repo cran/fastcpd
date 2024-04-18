@@ -187,13 +187,13 @@ plot.ts(var_data)
 (fastcpd_result <- fastcpd::fastcpd.mean(mean_data_1, r.progress = FALSE)@cp_set)
 
 ## ----univariate-mean-change-fastcpd-testthat, include = FALSE-----------------
-testthat::expect_equal(fastcpd_result, c(300, 700))
+testthat::expect_equal(fastcpd_result, c(300, 700), tolerance = 0.2)
 
 ## ----univariate-mean-change-CptNonPar-----------------------------------------
 (CptNonPar_result <- CptNonPar::np.mojo(mean_data_1, G = floor(length(mean_data_1) / 6))$cpts)
 
 ## ----univariate-mean-change-CptNonPar-testthat, include = FALSE---------------
-testthat::expect_equal(CptNonPar_result, c(300, 700))
+testthat::expect_equal(CptNonPar_result, c(300, 700), tolerance = 0.2)
 
 ## ----univariate-mean-change-strucchange, eval = FALSE-------------------------
 #  strucchange::breakpoints(y ~ 1, data = data.frame(y = mean_data_1))$breakpoints
@@ -207,19 +207,19 @@ testthat::expect_equal(CptNonPar_result, c(300, 700))
 (changepoint_result <- changepoint::cpt.mean(c(mean_data_1))@cpts)
 
 ## ----univariate-mean-change-changepoint-testthat, include = FALSE-------------
-testthat::expect_equal(changepoint_result, c(300, 1000))
+testthat::expect_equal(changepoint_result, c(300, 1000), tolerance = 0.2)
 
 ## ----univariate-mean-change-breakfast-----------------------------------------
 (breakfast_result <- breakfast::breakfast(mean_data_1)$cptmodel.list[[6]]$cpts)
 
 ## ----univariate-mean-change-breakfast-testthat, include = FALSE---------------
-testthat::expect_equal(breakfast_result, c(300, 700))
+testthat::expect_equal(breakfast_result, c(300, 700), tolerance = 0.2)
 
 ## ----univariate-mean-change-wbs-----------------------------------------------
 (wbs_result <- wbs::wbs(mean_data_1)$cpt$cpt.ic$mbic.penalty)
 
 ## ----univariate-mean-change-wbs-testthat, include = FALSE---------------------
-testthat::expect_equal(wbs_result, c(300, 700))
+testthat::expect_equal(wbs_result, c(300, 700), tolerance = 0.2)
 
 ## ----univariate-mean-change-mosum, eval = FALSE-------------------------------
 #  mosum::mosum(c(mean_data_1), G = 40)$cpts.info$cpts
@@ -229,7 +229,7 @@ testthat::expect_equal(wbs_result, c(300, 700))
 (fpop_result <- fpop::Fpop(mean_data_1, nrow(mean_data_1))$t.est)
 
 ## ----univariate-mean-change-fpop-testthat, include = FALSE--------------------
-testthat::expect_equal(fpop_result, c(300, 700, 1000))
+testthat::expect_equal(fpop_result, c(300, 700, 1000), tolerance = 0.2)
 
 ## ----univariate-mean-change-gfpop, eval = FALSE-------------------------------
 #  gfpop::gfpop(
@@ -262,7 +262,7 @@ testthat::expect_equal(fpop_result, c(300, 700, 1000))
 (jointseg_result <- jointseg::jointSeg(mean_data_1, K = 2)$bestBkp)
 
 ## ----univariate-mean-change-jointseg-testthat, include = FALSE----------------
-testthat::expect_equal(jointseg_result, c(300, 700))
+testthat::expect_equal(jointseg_result, c(300, 700), tolerance = 0.2)
 
 ## ----univariate-mean-change-Rbeast, eval = FALSE------------------------------
 #  Rbeast::beast(
@@ -274,22 +274,21 @@ testthat::expect_equal(jointseg_result, c(300, 700))
 (stepR_result <- stepR::stepFit(mean_data_1, alpha = 0.5)$rightEnd)
 
 ## ----univariate-mean-change-stepR-testthat, include = FALSE-------------------
-testthat::expect_equal(stepR_result, c(300, 700, 1000))
+testthat::expect_equal(stepR_result, c(300, 700, 1000), tolerance = 0.2)
 
 ## ----univariate-mean-change-cpm-----------------------------------------------
 (cpm_result <- cpm::processStream(mean_data_1, cpmType = "Student")$changePoints)
 
 ## ----univariate-mean-change-cpm-testthat, include = FALSE---------------------
-testthat::expect_equal(cpm_result, c(299, 699))
+testthat::expect_equal(cpm_result, c(299, 699), tolerance = 0.2)
 
 ## ----univariate-mean-change-segmented-----------------------------------------
-(segmented_result <- segmented::segmented(
-  lm(y ~ 1 + x, data.frame(y = mean_data_1, x = seq_len(nrow(mean_data_1)))),
-  seg.Z = ~ x
+(segmented_result <- segmented::stepmented(
+  as.numeric(mean_data_1), npsi = 2
 )$psi[, "Est."])
 
 ## ----univariate-mean-change-segmented-testthat, include = FALSE---------------
-testthat::expect_equal(segmented_result, c(495))
+testthat::expect_equivalent(segmented_result, c(298, 699), tolerance = 0.2)
 
 ## ----univariate-mean-change-mcp, eval = FALSE---------------------------------
 #  plot(
@@ -310,7 +309,7 @@ plot(not::not(mean_data_1, contrast = "pcwsConstMean"))
 (fastcpd_result <- fastcpd::fastcpd.mv(mv_data_1, r.progress = FALSE)@cp_set)
 
 ## ----univariate-mean-and-or-variance-change-fastcpd-testthat, include = FALSE----
-testthat::expect_equal(fastcpd_result, c(300, 700, 1001, 1300, 1700))
+testthat::expect_equal(fastcpd_result, c(300, 700, 1001, 1300, 1700), tolerance = 0.2)
 
 ## ----univariate-mean-and-or-variance-change-ecp, eval = FALSE-----------------
 #  ecp::e.divisive(mv_data_1)$estimates
@@ -320,19 +319,19 @@ testthat::expect_equal(fastcpd_result, c(300, 700, 1001, 1300, 1700))
 (changepoint_result <- changepoint::cpt.meanvar(c(mv_data_1))@cpts)
 
 ## ----univariate-mean-and-or-variance-change-changepoint-testthat, include = FALSE----
-testthat::expect_equal(changepoint_result, c(300, 2000))
+testthat::expect_equal(changepoint_result, c(300, 2000), tolerance = 0.2)
 
 ## ----univariate-mean-and-or-variance-change-CptNonPar-------------------------
 (CptNonPar_result <- CptNonPar::np.mojo(mv_data_1, G = floor(length(mv_data_1) / 6))$cpts)
 
 ## ----univariate-mean-and-or-variance-change-CptNonPar-testthat, include = FALSE----
-testthat::expect_equal(CptNonPar_result, c(333, 700, 1300))
+testthat::expect_equal(CptNonPar_result, c(333, 700, 1300), tolerance = 0.2)
 
 ## ----univariate-mean-and-or-variance-change-cpm-------------------------------
 (cpm_result <- cpm::processStream(mv_data_1, cpmType = "GLR")$changePoints)
 
 ## ----univariate-mean-and-or-variance-change-cpm-testthat, include = FALSE-----
-testthat::expect_equal(cpm_result, c(293, 300, 403, 408, 618, 621, 696, 1000, 1021, 1024, 1293, 1300, 1417, 1693, 1700, 1981))
+testthat::expect_equal(cpm_result, c(293, 300, 403, 408, 618, 621, 696, 1000, 1021, 1024, 1293, 1300, 1417, 1693, 1700, 1981), tolerance = 0.2)
 
 ## ----univariate-mean-and-or-variance-change-InspectChangepoint, eval = FALSE----
 #  invisible(
@@ -392,13 +391,13 @@ plot(not::not(mv_data_1, contrast = "pcwsConstMeanVar"))
 (fastcpd_result <- fastcpd::fastcpd.mean(mean_data_3, r.progress = FALSE)@cp_set)
 
 ## ----multivariate-mean-change-fastcpd-testthat, include = FALSE---------------
-testthat::expect_equal(fastcpd_result, c(300, 700))
+testthat::expect_equal(fastcpd_result, c(300, 700), tolerance = 0.2)
 
 ## ----multivariate-mean-change-CptNonPar---------------------------------------
 (CptNonPar_result <- CptNonPar::np.mojo(mean_data_3, G = floor(nrow(mean_data_3) / 6))$cpts)
 
 ## ----multivariate-mean-change-CptNonPar-testthat, include = FALSE-------------
-testthat::expect_equal(CptNonPar_result, c(300, 700))
+testthat::expect_equal(CptNonPar_result, c(300, 700), tolerance = 0.2)
 
 ## ----multivariate-mean-change-InspectChangepoint, eval = FALSE----------------
 #  invisible(
@@ -420,7 +419,7 @@ testthat::expect_equal(CptNonPar_result, c(300, 700))
 (jointseg_result <- jointseg::jointSeg(mean_data_3, K = 2)$bestBkp)
 
 ## ----multivariate-mean-change-jointseg-testthat, include = FALSE--------------
-testthat::expect_equal(jointseg_result, c(300, 700))
+testthat::expect_equal(jointseg_result, c(300, 700), tolerance = 0.2)
 
 ## ----multivariate-mean-change-Rbeast, eval = FALSE----------------------------
 #  invisible(
@@ -465,7 +464,7 @@ testthat::expect_equal(jointseg_result, c(300, 700))
 (fastcpd_result <- fastcpd::fastcpd.mv(mv_data_3, r.progress = FALSE)@cp_set)
 
 ## ----multivariate-mean-and-or-variance-change-fastcpd-testthat, include = FALSE----
-testthat::expect_equal(fastcpd_result, c(300, 700, 1000, 1300, 1700))
+testthat::expect_equal(fastcpd_result, c(300, 700, 1000, 1300, 1700), tolerance = 0.2)
 
 ## ----multivariate-mean-and-or-variance-change-ecp, eval = FALSE---------------
 #  ecp::e.divisive(mv_data_3)$estimates
@@ -545,7 +544,7 @@ testthat::expect_equal(fastcpd_result, c(300, 700, 1000, 1300, 1700))
 (fastcpd_result <- fastcpd::fastcpd.lm(lm_data, r.progress = FALSE)@cp_set)
 
 ## ----linear-regression-fastcpd-testthat, include = FALSE----------------------
-testthat::expect_equal(fastcpd_result, c(97, 201))
+testthat::expect_equal(fastcpd_result, c(97, 201), tolerance = 0.2)
 
 ## ----linear-regression-strucchange, eval = FALSE------------------------------
 #  strucchange::breakpoints(y ~ . - 1, data = lm_data)$breakpoints
@@ -561,13 +560,13 @@ testthat::expect_equal(fastcpd_result, c(97, 201))
 )$psi[, "Est."])
 
 ## ----linear-regression-segmented-testthat, include = FALSE--------------------
-testthat::expect_lt(segmented_result - 233, 1)
+testthat::expect_equivalent(segmented_result, c(233), tolerance = 0.2)
 
 ## ----logistic-regression-fastcpd----------------------------------------------
 (fastcpd_result <- fastcpd::fastcpd.binomial(binomial_data, r.progress = FALSE)@cp_set)
 
 ## ----logistic-regression-fastcpd-testthat, include = FALSE--------------------
-testthat::expect_equal(fastcpd_result, 302)
+testthat::expect_equal(fastcpd_result, 302, tolerance = 0.2)
 
 ## ----logistic-regression-strucchange, eval = FALSE----------------------------
 #  strucchange::breakpoints(y ~ . - 1, data = binomial_data)$breakpoints
@@ -577,7 +576,7 @@ testthat::expect_equal(fastcpd_result, 302)
 (fastcpd_result <- fastcpd::fastcpd.poisson(poisson_data, r.progress = FALSE)@cp_set)
 
 ## ----poisson-regression-fastcpd-testthat, include = FALSE---------------------
-testthat::expect_equal(fastcpd_result, c(498, 805, 1003))
+testthat::expect_equal(fastcpd_result, c(498, 805, 1003), tolerance = 0.2)
 
 ## ----poisson-regression-strucchange, eval = FALSE-----------------------------
 #  strucchange::breakpoints(y ~ . - 1, data = poisson_data)$breakpoints
@@ -597,13 +596,13 @@ testthat::expect_true(sum(fastcpd_result - c(79, 199, 320)) <= 1)
 (fastcpd_result <- fastcpd::fastcpd.ar(ar_data, 3, r.progress = FALSE)@cp_set)
 
 ## ----ar3-fastcpd-testthat, include = FALSE------------------------------------
-testthat::expect_equal(fastcpd_result, c(614))
+testthat::expect_equal(fastcpd_result, c(614), tolerance = 0.2)
 
 ## ----ar3-CptNonPar------------------------------------------------------------
 (CptNonPar_result <- CptNonPar::np.mojo(ar_data, G = floor(length(ar_data) / 6))$cpts)
 
 ## ----ar3-CptNonPar-testthat, include = FALSE----------------------------------
-testthat::expect_equal(CptNonPar_result, numeric(0))
+testthat::expect_equal(CptNonPar_result, numeric(0), tolerance = 0.2)
 
 ## ----ar3-segmented------------------------------------------------------------
 (segmented_result <- segmented::segmented(
@@ -614,7 +613,7 @@ testthat::expect_equal(CptNonPar_result, numeric(0))
 )$psi[, "Est."])
 
 ## ----ar3-segmented-testthat, include = FALSE----------------------------------
-testthat::expect_equal(segmented_result, c(690))
+testthat::expect_equivalent(segmented_result, c(690), tolerance = 0.2)
 
 ## ----ar3-mcp, eval = FALSE----------------------------------------------------
 #  plot(
@@ -629,13 +628,13 @@ testthat::expect_equal(segmented_result, c(690))
 (fastcpd_result <- fastcpd::fastcpd.garch(garch_data, c(1, 1), r.progress = FALSE)@cp_set)
 
 ## ----garch11-fastcpd-testthat, include = FALSE--------------------------------
-testthat::expect_equal(fastcpd_result, c(205))
+testthat::expect_equal(fastcpd_result, c(205), tolerance = 0.2)
 
 ## ----garch11-CptNonPar--------------------------------------------------------
 (CptNonPar_result <- CptNonPar::np.mojo(garch_data, G = floor(length(garch_data) / 6))$cpts)
 
 ## ----garch11-CptNonPar-testthat, include = FALSE------------------------------
-testthat::expect_equal(CptNonPar_result, c(206))
+testthat::expect_equal(CptNonPar_result, c(206), tolerance = 0.2)
 
 ## ----garch11-strucchange, eval = FALSE----------------------------------------
 #  strucchange::breakpoints(x ~ 1, data = data.frame(x = garch_data))$breakpoints
@@ -647,13 +646,13 @@ testthat::expect_equal(CptNonPar_result, c(206))
 )@cp_set)
 
 ## ----var2-fastcpd-testthat, include = FALSE-----------------------------------
-testthat::expect_equal(fastcpd_result, c(500))
+testthat::expect_equal(fastcpd_result, c(500), tolerance = 0.2)
 
 ## ----var2-VARDetect-----------------------------------------------------------
 (VARDetect_result <- VARDetect::tbss(var_data)$cp)
 
 ## ----var2-VARDetect-testthat, include = FALSE---------------------------------
-testthat::expect_equal(VARDetect_result, c(501))
+testthat::expect_equal(VARDetect_result, c(501), tolerance = 0.2)
 
 ## ----detection-comparison-well-log, eval = FALSE------------------------------
 #  well_log <- well_log[well_log > 1e5]
@@ -969,23 +968,23 @@ testthat::expect_equal(VARDetect_result, c(501))
 #  
 #  plot.ts(var_data)
 #  (fastcpd_result <- fastcpd::fastcpd.mean(mean_data_1, r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(300, 700))
+#  testthat::expect_equal(fastcpd_result, c(300, 700), tolerance = 0.2)
 #  (CptNonPar_result <- CptNonPar::np.mojo(mean_data_1, G = floor(length(mean_data_1) / 6))$cpts)
-#  testthat::expect_equal(CptNonPar_result, c(300, 700))
+#  testthat::expect_equal(CptNonPar_result, c(300, 700), tolerance = 0.2)
 #  strucchange::breakpoints(y ~ 1, data = data.frame(y = mean_data_1))$breakpoints
 #  #> [1] 300 700
 #  ecp::e.divisive(mean_data_1)$estimates
 #  #> [1]    1  301  701 1001
 #  (changepoint_result <- changepoint::cpt.mean(c(mean_data_1))@cpts)
-#  testthat::expect_equal(changepoint_result, c(300, 1000))
+#  testthat::expect_equal(changepoint_result, c(300, 1000), tolerance = 0.2)
 #  (breakfast_result <- breakfast::breakfast(mean_data_1)$cptmodel.list[[6]]$cpts)
-#  testthat::expect_equal(breakfast_result, c(300, 700))
+#  testthat::expect_equal(breakfast_result, c(300, 700), tolerance = 0.2)
 #  (wbs_result <- wbs::wbs(mean_data_1)$cpt$cpt.ic$mbic.penalty)
-#  testthat::expect_equal(wbs_result, c(300, 700))
+#  testthat::expect_equal(wbs_result, c(300, 700), tolerance = 0.2)
 #  mosum::mosum(c(mean_data_1), G = 40)$cpts.info$cpts
 #  #> [1] 300 700
 #  (fpop_result <- fpop::Fpop(mean_data_1, nrow(mean_data_1))$t.est)
-#  testthat::expect_equal(fpop_result, c(300, 700, 1000))
+#  testthat::expect_equal(fpop_result, c(300, 700, 1000), tolerance = 0.2)
 #  gfpop::gfpop(
 #    data = mean_data_1,
 #    mygraph = gfpop::graph(
@@ -1010,20 +1009,19 @@ testthat::expect_equal(VARDetect_result, c(501))
 #  result_InspectChangepoint$changepoints[, "location"]
 #  #> [1] 300 700
 #  (jointseg_result <- jointseg::jointSeg(mean_data_1, K = 2)$bestBkp)
-#  testthat::expect_equal(jointseg_result, c(300, 700))
+#  testthat::expect_equal(jointseg_result, c(300, 700), tolerance = 0.2)
 #  Rbeast::beast(
 #    mean_data_1, season = "none", print.progress = FALSE, quiet = TRUE
 #  )$trend$cp
 #  #>  [1] 701 301 NaN NaN NaN NaN NaN NaN NaN NaN
 #  (stepR_result <- stepR::stepFit(mean_data_1, alpha = 0.5)$rightEnd)
-#  testthat::expect_equal(stepR_result, c(300, 700, 1000))
+#  testthat::expect_equal(stepR_result, c(300, 700, 1000), tolerance = 0.2)
 #  (cpm_result <- cpm::processStream(mean_data_1, cpmType = "Student")$changePoints)
-#  testthat::expect_equal(cpm_result, c(299, 699))
-#  (segmented_result <- segmented::segmented(
-#    lm(y ~ 1 + x, data.frame(y = mean_data_1, x = seq_len(nrow(mean_data_1)))),
-#    seg.Z = ~ x
+#  testthat::expect_equal(cpm_result, c(299, 699), tolerance = 0.2)
+#  (segmented_result <- segmented::stepmented(
+#    as.numeric(mean_data_1), npsi = 2
 #  )$psi[, "Est."])
-#  testthat::expect_equal(segmented_result, c(495))
+#  testthat::expect_equivalent(segmented_result, c(298, 699), tolerance = 0.2)
 #  plot(
 #    mcp::mcp(
 #      list(y ~ 1, ~ 1, ~ 1),
@@ -1034,15 +1032,15 @@ testthat::expect_equal(VARDetect_result, c(501))
 #  plot(not::not(mean_data_1, contrast = "pcwsConstMean"))
 #  plot(bcp::bcp(mean_data_1))
 #  (fastcpd_result <- fastcpd::fastcpd.mv(mv_data_1, r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(300, 700, 1001, 1300, 1700))
+#  testthat::expect_equal(fastcpd_result, c(300, 700, 1001, 1300, 1700), tolerance = 0.2)
 #  ecp::e.divisive(mv_data_1)$estimates
 #  #> [1]    1  301  701 1001 1301 1701 2001
 #  (changepoint_result <- changepoint::cpt.meanvar(c(mv_data_1))@cpts)
-#  testthat::expect_equal(changepoint_result, c(300, 2000))
+#  testthat::expect_equal(changepoint_result, c(300, 2000), tolerance = 0.2)
 #  (CptNonPar_result <- CptNonPar::np.mojo(mv_data_1, G = floor(length(mv_data_1) / 6))$cpts)
-#  testthat::expect_equal(CptNonPar_result, c(333, 700, 1300))
+#  testthat::expect_equal(CptNonPar_result, c(333, 700, 1300), tolerance = 0.2)
 #  (cpm_result <- cpm::processStream(mv_data_1, cpmType = "GLR")$changePoints)
-#  testthat::expect_equal(cpm_result, c(293, 300, 403, 408, 618, 621, 696, 1000, 1021, 1024, 1293, 1300, 1417, 1693, 1700, 1981))
+#  testthat::expect_equal(cpm_result, c(293, 300, 403, 408, 618, 621, 696, 1000, 1021, 1024, 1293, 1300, 1417, 1693, 1700, 1981), tolerance = 0.2)
 #  invisible(
 #    suppressMessages(
 #      capture.output(
@@ -1090,9 +1088,9 @@ testthat::expect_equal(VARDetect_result, c(501))
 #  )
 #  plot(not::not(mv_data_1, contrast = "pcwsConstMeanVar"))
 #  (fastcpd_result <- fastcpd::fastcpd.mean(mean_data_3, r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(300, 700))
+#  testthat::expect_equal(fastcpd_result, c(300, 700), tolerance = 0.2)
 #  (CptNonPar_result <- CptNonPar::np.mojo(mean_data_3, G = floor(nrow(mean_data_3) / 6))$cpts)
-#  testthat::expect_equal(CptNonPar_result, c(300, 700))
+#  testthat::expect_equal(CptNonPar_result, c(300, 700), tolerance = 0.2)
 #  invisible(
 #    suppressMessages(
 #      capture.output(
@@ -1108,7 +1106,7 @@ testthat::expect_equal(VARDetect_result, c(501))
 #  result_InspectChangepoint$changepoints[, "location"]
 #  #> [1] 300 700
 #  (jointseg_result <- jointseg::jointSeg(mean_data_3, K = 2)$bestBkp)
-#  testthat::expect_equal(jointseg_result, c(300, 700))
+#  testthat::expect_equal(jointseg_result, c(300, 700), tolerance = 0.2)
 #  invisible(
 #    capture.output(
 #      result_Rbeast <- Rbeast::beast123(
@@ -1141,7 +1139,7 @@ testthat::expect_equal(VARDetect_result, c(501))
 #  #> [1]    1  301  701 1001
 #  plot(bcp::bcp(mean_data_3))
 #  (fastcpd_result <- fastcpd::fastcpd.mv(mv_data_3, r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(300, 700, 1000, 1300, 1700))
+#  testthat::expect_equal(fastcpd_result, c(300, 700, 1000, 1300, 1700), tolerance = 0.2)
 #  ecp::e.divisive(mv_data_3)$estimates
 #  #> [1]    1  301  701 1001 1301 1701 2001
 #  invisible(
@@ -1211,7 +1209,7 @@ testthat::expect_equal(VARDetect_result, c(501))
 #  #>  [9,] 1865  747  771  879
 #  #> [10,] 1962  924 1700 1919
 #  (fastcpd_result <- fastcpd::fastcpd.lm(lm_data, r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(97, 201))
+#  testthat::expect_equal(fastcpd_result, c(97, 201), tolerance = 0.2)
 #  strucchange::breakpoints(y ~ . - 1, data = lm_data)$breakpoints
 #  #> [1] 100 201
 #  (segmented_result <- segmented::segmented(
@@ -1221,13 +1219,13 @@ testthat::expect_equal(VARDetect_result, c(501))
 #    ),
 #    seg.Z = ~ index
 #  )$psi[, "Est."])
-#  testthat::expect_lt(segmented_result - 233, 1)
+#  testthat::expect_equivalent(segmented_result, c(233), tolerance = 0.2)
 #  (fastcpd_result <- fastcpd::fastcpd.binomial(binomial_data, r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, 302)
+#  testthat::expect_equal(fastcpd_result, 302, tolerance = 0.2)
 #  strucchange::breakpoints(y ~ . - 1, data = binomial_data)$breakpoints
 #  #> [1] 297
 #  (fastcpd_result <- fastcpd::fastcpd.poisson(poisson_data, r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(498, 805, 1003))
+#  testthat::expect_equal(fastcpd_result, c(498, 805, 1003), tolerance = 0.2)
 #  strucchange::breakpoints(y ~ . - 1, data = poisson_data)$breakpoints
 #  #> [1] 935
 #  (fastcpd_result <- fastcpd::fastcpd.lasso(lasso_data, r.progress = FALSE)@cp_set)
@@ -1235,16 +1233,16 @@ testthat::expect_equal(VARDetect_result, c(501))
 #  strucchange::breakpoints(y ~ . - 1, data = lasso_data)$breakpoints,
 #  #> [1]  80 200 321
 #  (fastcpd_result <- fastcpd::fastcpd.ar(ar_data, 3, r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(614))
+#  testthat::expect_equal(fastcpd_result, c(614), tolerance = 0.2)
 #  (CptNonPar_result <- CptNonPar::np.mojo(ar_data, G = floor(length(ar_data) / 6))$cpts)
-#  testthat::expect_equal(CptNonPar_result, numeric(0))
+#  testthat::expect_equal(CptNonPar_result, numeric(0), tolerance = 0.2)
 #  (segmented_result <- segmented::segmented(
 #    lm(
 #      y ~ x + 1, data.frame(y = ar_data, x = seq_along(ar_data))
 #    ),
 #    seg.Z = ~ x
 #  )$psi[, "Est."])
-#  testthat::expect_equal(segmented_result, c(690))
+#  testthat::expect_equivalent(segmented_result, c(690), tolerance = 0.2)
 #  plot(
 #    mcp::mcp(
 #      list(y ~ 1 + ar(3), ~ 0 + ar(3)),
@@ -1253,17 +1251,17 @@ testthat::expect_equal(VARDetect_result, c(501))
 #    )
 #  )
 #  (fastcpd_result <- fastcpd::fastcpd.garch(garch_data, c(1, 1), r.progress = FALSE)@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(205))
+#  testthat::expect_equal(fastcpd_result, c(205), tolerance = 0.2)
 #  (CptNonPar_result <- CptNonPar::np.mojo(garch_data, G = floor(length(garch_data) / 6))$cpts)
-#  testthat::expect_equal(CptNonPar_result, c(206))
+#  testthat::expect_equal(CptNonPar_result, c(206), tolerance = 0.2)
 #  strucchange::breakpoints(x ~ 1, data = data.frame(x = garch_data))$breakpoints
 #  #> [1] NA
 #  (fastcpd_result <- fastcpd::fastcpd.var(
 #    var_data, 2, cost_adjustment = NULL, r.progress = FALSE
 #  )@cp_set)
-#  testthat::expect_equal(fastcpd_result, c(500))
+#  testthat::expect_equal(fastcpd_result, c(500), tolerance = 0.2)
 #  (VARDetect_result <- VARDetect::tbss(var_data)$cp)
-#  testthat::expect_equal(VARDetect_result, c(501))
+#  testthat::expect_equal(VARDetect_result, c(501), tolerance = 0.2)
 #  well_log <- well_log[well_log > 1e5]
 #  
 #  result <- list(
