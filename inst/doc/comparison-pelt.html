@@ -1247,32 +1247,34 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>  <span class="at">epsilon =</span> <span class="fl">1e-5</span>,</span>
 <span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>  <span class="at">beta =</span> beta,</span>
 <span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>  <span class="at">cost_adjustment =</span> <span class="st">&quot;BIC&quot;</span>,</span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
-<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>)<span class="sc">@</span>cp_set</span>
-<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; [1] 100 300 520 800 901</span></span>
-<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a></span>
-<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="fu">pelt_vanilla_lasso</span>(data, beta, <span class="at">cost =</span> cost_lasso)<span class="sc">$</span>cp</span>
-<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
-<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; [1] 300</span></span>
-<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; [1] 400</span></span>
-<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; [1] 500</span></span>
-<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; [1] 600</span></span>
-<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; [1] 700</span></span>
-<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt; [1] 800</span></span>
-<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a><span class="co">#&gt; [1] 900</span></span>
-<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="co">#&gt; [1] 1000</span></span>
-<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a><span class="co">#&gt; [1]   0 103 299 510 800 900</span></span>
-<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a></span>
-<span id="cb6-40"><a href="#cb6-40" tabindex="-1"></a><span class="fu">fastcpd.lasso</span>(</span>
-<span id="cb6-41"><a href="#cb6-41" tabindex="-1"></a>  <span class="fu">cbind</span>(data[, d <span class="sc">+</span> <span class="dv">1</span>], data[, <span class="dv">1</span><span class="sc">:</span>d]),</span>
-<span id="cb6-42"><a href="#cb6-42" tabindex="-1"></a>  <span class="at">vanilla_percentage =</span> <span class="dv">1</span>,</span>
-<span id="cb6-43"><a href="#cb6-43" tabindex="-1"></a>  <span class="at">epsilon =</span> <span class="fl">1e-5</span>,</span>
-<span id="cb6-44"><a href="#cb6-44" tabindex="-1"></a>  <span class="at">beta =</span> beta,</span>
-<span id="cb6-45"><a href="#cb6-45" tabindex="-1"></a>  <span class="at">cost_adjustment =</span> <span class="st">&quot;BIC&quot;</span>,</span>
-<span id="cb6-46"><a href="#cb6-46" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
-<span id="cb6-47"><a href="#cb6-47" tabindex="-1"></a>)<span class="sc">@</span>cp_set</span>
-<span id="cb6-48"><a href="#cb6-48" tabindex="-1"></a><span class="co">#&gt; [1] 103 299 510 800 900</span></span></code></pre></div>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  <span class="at">pruning_coef =</span> <span class="dv">0</span>,</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>)<span class="sc">@</span>cp_set</span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; [1] 100 300 520 800 901</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="fu">pelt_vanilla_lasso</span>(data, beta, <span class="at">cost =</span> cost_lasso)<span class="sc">$</span>cp</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; [1] 300</span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; [1] 400</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; [1] 500</span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; [1] 600</span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt; [1] 700</span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a><span class="co">#&gt; [1] 800</span></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="co">#&gt; [1] 900</span></span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a><span class="co">#&gt; [1] 1000</span></span>
+<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a><span class="co">#&gt; [1]   0 103 299 510 800 900</span></span>
+<span id="cb6-40"><a href="#cb6-40" tabindex="-1"></a></span>
+<span id="cb6-41"><a href="#cb6-41" tabindex="-1"></a><span class="fu">fastcpd.lasso</span>(</span>
+<span id="cb6-42"><a href="#cb6-42" tabindex="-1"></a>  <span class="fu">cbind</span>(data[, d <span class="sc">+</span> <span class="dv">1</span>], data[, <span class="dv">1</span><span class="sc">:</span>d]),</span>
+<span id="cb6-43"><a href="#cb6-43" tabindex="-1"></a>  <span class="at">vanilla_percentage =</span> <span class="dv">1</span>,</span>
+<span id="cb6-44"><a href="#cb6-44" tabindex="-1"></a>  <span class="at">epsilon =</span> <span class="fl">1e-5</span>,</span>
+<span id="cb6-45"><a href="#cb6-45" tabindex="-1"></a>  <span class="at">beta =</span> beta,</span>
+<span id="cb6-46"><a href="#cb6-46" tabindex="-1"></a>  <span class="at">cost_adjustment =</span> <span class="st">&quot;BIC&quot;</span>,</span>
+<span id="cb6-47"><a href="#cb6-47" tabindex="-1"></a>  <span class="at">pruning_coef =</span> <span class="dv">0</span>,</span>
+<span id="cb6-48"><a href="#cb6-48" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-49"><a href="#cb6-49" tabindex="-1"></a>)<span class="sc">@</span>cp_set</span>
+<span id="cb6-50"><a href="#cb6-50" tabindex="-1"></a><span class="co">#&gt; [1] 103 299 510 800 900</span></span></code></pre></div>
 </div>
 <div id="notes" class="section level1">
 <h1>Notes</h1>
@@ -2172,32 +2174,34 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb7-890"><a href="#cb7-890" tabindex="-1"></a>  <span class="at">epsilon =</span> <span class="fl">1e-5</span>,</span>
 <span id="cb7-891"><a href="#cb7-891" tabindex="-1"></a>  <span class="at">beta =</span> beta,</span>
 <span id="cb7-892"><a href="#cb7-892" tabindex="-1"></a>  <span class="at">cost_adjustment =</span> <span class="st">&quot;BIC&quot;</span>,</span>
-<span id="cb7-893"><a href="#cb7-893" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
-<span id="cb7-894"><a href="#cb7-894" tabindex="-1"></a>)<span class="sc">@</span>cp_set</span>
-<span id="cb7-895"><a href="#cb7-895" tabindex="-1"></a><span class="co">#&gt; [1] 100 300 520 800 901</span></span>
-<span id="cb7-896"><a href="#cb7-896" tabindex="-1"></a></span>
-<span id="cb7-897"><a href="#cb7-897" tabindex="-1"></a><span class="fu">pelt_vanilla_lasso</span>(data, beta, <span class="at">cost =</span> cost_lasso)<span class="sc">$</span>cp</span>
-<span id="cb7-898"><a href="#cb7-898" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
-<span id="cb7-899"><a href="#cb7-899" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
-<span id="cb7-900"><a href="#cb7-900" tabindex="-1"></a><span class="co">#&gt; [1] 300</span></span>
-<span id="cb7-901"><a href="#cb7-901" tabindex="-1"></a><span class="co">#&gt; [1] 400</span></span>
-<span id="cb7-902"><a href="#cb7-902" tabindex="-1"></a><span class="co">#&gt; [1] 500</span></span>
-<span id="cb7-903"><a href="#cb7-903" tabindex="-1"></a><span class="co">#&gt; [1] 600</span></span>
-<span id="cb7-904"><a href="#cb7-904" tabindex="-1"></a><span class="co">#&gt; [1] 700</span></span>
-<span id="cb7-905"><a href="#cb7-905" tabindex="-1"></a><span class="co">#&gt; [1] 800</span></span>
-<span id="cb7-906"><a href="#cb7-906" tabindex="-1"></a><span class="co">#&gt; [1] 900</span></span>
-<span id="cb7-907"><a href="#cb7-907" tabindex="-1"></a><span class="co">#&gt; [1] 1000</span></span>
-<span id="cb7-908"><a href="#cb7-908" tabindex="-1"></a><span class="co">#&gt; [1]   0 103 299 510 800 900</span></span>
-<span id="cb7-909"><a href="#cb7-909" tabindex="-1"></a></span>
-<span id="cb7-910"><a href="#cb7-910" tabindex="-1"></a><span class="fu">fastcpd.lasso</span>(</span>
-<span id="cb7-911"><a href="#cb7-911" tabindex="-1"></a>  <span class="fu">cbind</span>(data[, d <span class="sc">+</span> <span class="dv">1</span>], data[, <span class="dv">1</span><span class="sc">:</span>d]),</span>
-<span id="cb7-912"><a href="#cb7-912" tabindex="-1"></a>  <span class="at">vanilla_percentage =</span> <span class="dv">1</span>,</span>
-<span id="cb7-913"><a href="#cb7-913" tabindex="-1"></a>  <span class="at">epsilon =</span> <span class="fl">1e-5</span>,</span>
-<span id="cb7-914"><a href="#cb7-914" tabindex="-1"></a>  <span class="at">beta =</span> beta,</span>
-<span id="cb7-915"><a href="#cb7-915" tabindex="-1"></a>  <span class="at">cost_adjustment =</span> <span class="st">&quot;BIC&quot;</span>,</span>
-<span id="cb7-916"><a href="#cb7-916" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
-<span id="cb7-917"><a href="#cb7-917" tabindex="-1"></a>)<span class="sc">@</span>cp_set</span>
-<span id="cb7-918"><a href="#cb7-918" tabindex="-1"></a><span class="co">#&gt; [1] 103 299 510 800 900</span></span></code></pre></div>
+<span id="cb7-893"><a href="#cb7-893" tabindex="-1"></a>  <span class="at">pruning_coef =</span> <span class="dv">0</span>,</span>
+<span id="cb7-894"><a href="#cb7-894" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
+<span id="cb7-895"><a href="#cb7-895" tabindex="-1"></a>)<span class="sc">@</span>cp_set</span>
+<span id="cb7-896"><a href="#cb7-896" tabindex="-1"></a><span class="co">#&gt; [1] 100 300 520 800 901</span></span>
+<span id="cb7-897"><a href="#cb7-897" tabindex="-1"></a></span>
+<span id="cb7-898"><a href="#cb7-898" tabindex="-1"></a><span class="fu">pelt_vanilla_lasso</span>(data, beta, <span class="at">cost =</span> cost_lasso)<span class="sc">$</span>cp</span>
+<span id="cb7-899"><a href="#cb7-899" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
+<span id="cb7-900"><a href="#cb7-900" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
+<span id="cb7-901"><a href="#cb7-901" tabindex="-1"></a><span class="co">#&gt; [1] 300</span></span>
+<span id="cb7-902"><a href="#cb7-902" tabindex="-1"></a><span class="co">#&gt; [1] 400</span></span>
+<span id="cb7-903"><a href="#cb7-903" tabindex="-1"></a><span class="co">#&gt; [1] 500</span></span>
+<span id="cb7-904"><a href="#cb7-904" tabindex="-1"></a><span class="co">#&gt; [1] 600</span></span>
+<span id="cb7-905"><a href="#cb7-905" tabindex="-1"></a><span class="co">#&gt; [1] 700</span></span>
+<span id="cb7-906"><a href="#cb7-906" tabindex="-1"></a><span class="co">#&gt; [1] 800</span></span>
+<span id="cb7-907"><a href="#cb7-907" tabindex="-1"></a><span class="co">#&gt; [1] 900</span></span>
+<span id="cb7-908"><a href="#cb7-908" tabindex="-1"></a><span class="co">#&gt; [1] 1000</span></span>
+<span id="cb7-909"><a href="#cb7-909" tabindex="-1"></a><span class="co">#&gt; [1]   0 103 299 510 800 900</span></span>
+<span id="cb7-910"><a href="#cb7-910" tabindex="-1"></a></span>
+<span id="cb7-911"><a href="#cb7-911" tabindex="-1"></a><span class="fu">fastcpd.lasso</span>(</span>
+<span id="cb7-912"><a href="#cb7-912" tabindex="-1"></a>  <span class="fu">cbind</span>(data[, d <span class="sc">+</span> <span class="dv">1</span>], data[, <span class="dv">1</span><span class="sc">:</span>d]),</span>
+<span id="cb7-913"><a href="#cb7-913" tabindex="-1"></a>  <span class="at">vanilla_percentage =</span> <span class="dv">1</span>,</span>
+<span id="cb7-914"><a href="#cb7-914" tabindex="-1"></a>  <span class="at">epsilon =</span> <span class="fl">1e-5</span>,</span>
+<span id="cb7-915"><a href="#cb7-915" tabindex="-1"></a>  <span class="at">beta =</span> beta,</span>
+<span id="cb7-916"><a href="#cb7-916" tabindex="-1"></a>  <span class="at">cost_adjustment =</span> <span class="st">&quot;BIC&quot;</span>,</span>
+<span id="cb7-917"><a href="#cb7-917" tabindex="-1"></a>  <span class="at">pruning_coef =</span> <span class="dv">0</span>,</span>
+<span id="cb7-918"><a href="#cb7-918" tabindex="-1"></a>  <span class="at">r.progress =</span> <span class="cn">FALSE</span></span>
+<span id="cb7-919"><a href="#cb7-919" tabindex="-1"></a>)<span class="sc">@</span>cp_set</span>
+<span id="cb7-920"><a href="#cb7-920" tabindex="-1"></a><span class="co">#&gt; [1] 103 299 510 800 900</span></span></code></pre></div>
 </div>
 
 

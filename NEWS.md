@@ -1,3 +1,11 @@
+# fastcpd 0.14.3
+
+*   Skip certain tests on CRAN.
+
+# fastcpd 0.14.2
+
+*   Fix CRAN noSuggests error.
+
 # fastcpd 0.14.1
 
 *   Fix possible numeric issues on CRAN breaking updates of other packages.
