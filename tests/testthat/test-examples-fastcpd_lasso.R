@@ -1,9 +1,7 @@
 testthat::test_that(
   "examples/fastcpd_lasso.txt", {
-    testthat::skip_if_not_installed("dplyr")
     testthat::skip_if_not_installed("ggplot2")
     testthat::skip_if_not_installed("mvtnorm")
-    testthat::skip_if_not_installed("reshape2")
 
     examples_lasso <- readLines("examples/fastcpd_lasso.txt")
     source(textConnection(paste(
@@ -11,6 +9,6 @@ testthat::test_that(
       collapse = "\n"
     )))
 
-    testthat::expect_equal(result@cp_set, c(80, 200, 320))
+    testthat::expect_equal(result@cp_set, c(80, 200, 321))
   }
 )

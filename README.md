@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# fastcpd <a href="https://fastcpd.xingchi.li"><img src="man/figures/logo.svg" align="right" height="138" /></a>
+# fastcpd: Fast Change Point Detection in R <a href="https://fastcpd.xingchi.li"><img src="man/figures/logo.svg" align="right" height="138" /></a>
 
 [![Codecov test
 coverage](https://codecov.io/gh/doccstat/fastcpd/branch/main/graph/badge.svg)](https://app.codecov.io/gh/doccstat/fastcpd?branch=main)
@@ -12,7 +12,7 @@ status](https://www.r-pkg.org/badges/version-last-release/fastcpd)](https://cran
 [![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/fastcpd)](https://cran.r-project.org/package=fastcpd)
 [![Last
 Commit](https://img.shields.io/github/last-commit/doccstat/fastcpd)](https://github.com/doccstat/fastcpd)
-[![R-CMD-check](https://github.com/doccstat/fastcpd/workflows/R-CMD-check/badge.svg)](https://github.com/doccstat/fastcpd/actions)
+[![R-CMD-check.yaml](https://github.com/doccstat/fastcpd/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/doccstat/fastcpd/actions)
 [![r-universe](https://doccstat.r-universe.dev/badges/fastcpd)](https://doccstat.r-universe.dev)
 
 ## Overview
@@ -34,8 +34,11 @@ To learn more behind the algorithms:
 ## Installation
 
 ``` r
-# Install from CRAN
-install.packages("fastcpd")
+# Install from r-universe with CRAN version as a fallback
+install.packages(
+  "fastcpd",
+  repos = c("https://doccstat.r-universe.dev", "https://cloud.r-project.org")
+)
 ```
 
 <details close>
@@ -44,12 +47,6 @@ Development version
 </summary>
 
 ``` r
-# Development version from r-universe with CRAN version as a fallback
-install.packages(
-  "fastcpd",
-  repos = c("https://doccstat.r-universe.dev", "https://cloud.r-project.org")
-)
-
 ## install.packages("pak")
 pak::pak("doccstat/fastcpd")
 
@@ -76,40 +73,6 @@ conda install -c conda-forge r-fastcpd
 
 ### FAQ
 
-<details close>
-<summary>
-Package dependencies
-</summary>
-
-`fastcpd` depends on the following packages:
-
-- [Rcpp](https://github.com/RcppCore/Rcpp), for C++ source code
-  compilation.
-- [RcppArmadillo](https://github.com/RcppCore/RcppArmadillo), for fast
-  linear algebra.
-- [fastglm](https://github.com/jaredhuling/fastglm), for fast
-  generalized linear models.
-- [glmnet](https://glmnet.stanford.edu/), for penalized regression.
-- [ggplot2](https://github.com/tidyverse/ggplot2), for data
-  visualization.
-
-If you’re compiling from source, you can run the following command to
-see the complete set of system packages needed on your machine.
-
-``` r
-pak::pkg_sysreqs("doccstat/fastcpd")
-#> ── Install scripts ───────────────────────────────────────────── Ubuntu 20.04
-#> apt-get -y update
-#> apt-get -y install libcurl4-openssl-dev libssl-dev zlib1g-dev make
-#>
-#> ── Packages and their system dependencies ───────────────────────────────────
-#> curl       – libcurl4-openssl-dev, libssl-dev
-#> data.table – zlib1g-dev
-#> fs         – make
-#> openssl    – libssl-dev
-```
-
-</details>
 <details close>
 <summary>
 Should I install suggested packages?
@@ -170,7 +133,7 @@ summary(result)
 #> 614 
 #> 
 #> Cost values:
-#> 2743.759 2028.588 
+#> 2754.116 2038.945 
 #> 
 #> Parameters:
 #>     segment 1 segment 2
@@ -202,6 +165,34 @@ Note
 expected to see the progress bar when running the code by default.
 
 </details>
+
+``` r
+library(microbenchmark)
+set.seed(1)
+n <- 5 * 10^6
+mean_data <- c(rnorm(n / 2, 0, 1), rnorm(n / 2, 50, 1))
+ggplot2::autoplot(microbenchmark(
+  fastcpd = fastcpd::fastcpd.mean(mean_data, r.progress = FALSE, cp_only = TRUE, variance_estimation = 1),
+  changepoint = changepoint::cpt.mean(mean_data, method = "PELT"),
+  fpop = fpop::Fpop(mean_data, 2 * log(n)),
+  gfpop = gfpop::gfpop(
+    data = mean_data,
+    mygraph = gfpop::graph(
+      penalty = 2 * log(length(mean_data)) * gfpop::sdDiff(mean_data) ^ 2,
+      type = "updown"
+    ),
+    type = "mean"
+  ),
+  jointseg = jointseg::jointSeg(mean_data, K = 12),
+  mosum = mosum::mosum(c(mean_data), G = 40),
+  not = not::not(mean_data, contrast = "pcwsConstMean"),
+  wbs = wbs::wbs(mean_data)
+))
+#> Warning in microbenchmark(fastcpd = fastcpd::fastcpd.mean(mean_data, r.progress
+#> = FALSE, : less accurate nanosecond times to avoid potential integer overflows
+```
+
+![](man/figures/README-time-comparison-1.png)<!-- -->
 
 ## Examples
 

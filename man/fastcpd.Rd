@@ -24,6 +24,7 @@ fastcpd(
   epsilon = 1e-10,
   order = c(0, 0, 0),
   p = ncol(data) - 1,
+  variance_estimation = NULL,
   cp_only = FALSE,
   vanilla_percentage = 0,
   warm_start = FALSE,
@@ -199,6 +200,10 @@ covariates will be inferred from the data, i.e.,
 \code{p = ncol(data) - 1}. This parameter is superseded by \code{order} in the
 case of time series models: "ar", "var", "arima".}
 
+\item{variance_estimation}{An estimate of the variance / covariance matrix
+for the data. If not specified, the variance / covariance matrix will be
+estimated using the data.}
+
 \item{cp_only}{If \code{TRUE}, only the change points are returned.
 Otherwise, the cost function values together with the estimated
 parameters for each segment are also returned. By default the value is
@@ -227,10 +232,6 @@ current segment. This parameter is only used for the \code{"glm"} families.}
 \item \code{include.mean} is used to determine if a mean/intercept term
 should be included in the ARIMA(\eqn{p}, \eqn{d}, \eqn{q}) or
 GARCH(\eqn{p}, \eqn{q}) models.
-\item \code{r.clock} is used to create an \code{RcppClock} object to record
-the time spent in the C++ code. Default is an empty string. If set to
-any non-empty string, an object with specified name will be created.
-Usage: \code{library(RcppClock); plot(VARIABLE_NAME)}.
 \item \code{r.progress} is used to control the progress bar. By default the
 progress bar will be shown. To disable it, set \code{r.progress = FALSE}.
 \item \code{p.response} is used to specify the number of response variables.

@@ -146,6 +146,9 @@
 #' covariates will be inferred from the data, i.e.,
 #' \code{p = ncol(data) - 1}. This parameter is superseded by `order` in the
 #' case of time series models: "ar", "var", "arima".
+#' @param variance_estimation An estimate of the variance / covariance matrix
+#' for the data. If not specified, the variance / covariance matrix will be
+#' estimated using the data.
 #' @param cp_only If \code{TRUE}, only the change points are returned.
 #' Otherwise, the cost function values together with the estimated
 #' parameters for each segment are also returned. By default the value is
@@ -171,10 +174,6 @@
 #' \item \code{include.mean} is used to determine if a mean/intercept term
 #' should be included in the ARIMA(\eqn{p}, \eqn{d}, \eqn{q}) or
 #' GARCH(\eqn{p}, \eqn{q}) models.
-#' \item \code{r.clock} is used to create an \code{RcppClock} object to record
-#' the time spent in the C++ code. Default is an empty string. If set to
-#' any non-empty string, an object with specified name will be created.
-#' Usage: \code{library(RcppClock); plot(VARIABLE_NAME)}.
 #' \item \code{r.progress} is used to control the progress bar. By default the
 #' progress bar will be shown. To disable it, set \code{r.progress = FALSE}.
 #' \item \code{p.response} is used to specify the number of response variables.
@@ -204,7 +203,6 @@
 #' [summary.fastcpd()] for summarizing the results.
 #'
 #' @md
-#' @importFrom fastglm fastglm
 #' @importFrom glmnet glmnet cv.glmnet predict.glmnet
 #' @importFrom methods show
 #' @importFrom Rcpp evalCpp
@@ -230,6 +228,7 @@ fastcpd <- function(  # nolint: cyclomatic complexity
   epsilon = 1e-10,
   order = c(0, 0, 0),
   p = ncol(data) - 1,
+  variance_estimation = NULL,
   cp_only = FALSE,
   vanilla_percentage = 0,
   warm_start = FALSE,
@@ -250,7 +249,7 @@ fastcpd <- function(  # nolint: cyclomatic complexity
       "ar",  # -> "gaussian"
       "var",  # -> "mgaussian"
       "arima",  # -> "custom"
-      "garch",  # -> "custom"
+      "garch",  # -> "garch"
       "custom"  # -> "custom"
     )
   )
@@ -291,7 +290,6 @@ fastcpd <- function(  # nolint: cyclomatic complexity
   include_mean <- TRUE
   p_response <- get_p_response(family, y, data_)
   r_progress <- TRUE
-  r_clock <- ""
   if (methods::hasArg("include.mean")) {
     include_mean <- eval.parent(match.call()[["include.mean"]])
   }
@@ -301,42 +299,31 @@ fastcpd <- function(  # nolint: cyclomatic complexity
   if (methods::hasArg("r.progress")) {
     r_progress <- eval.parent(match.call()[["r.progress"]])
   }
-  if (methods::hasArg("r.clock")) {
-    r_clock <- eval.parent(match.call()[["r.clock"]])
-  }
 
-  # Define the cost functions for ARIMA and GARCH models.
+  # Define the cost functions for ARIMA model.
   if (family == "arima") {
     cost <- function(data) {
       tryCatch(
-        expr = -forecast::Arima(
+        expr = -stats::arima(
           c(data), order = order, method = "ML", include.mean = include_mean
         )$loglik,
         error = function(e) 0
       )
     }
-  } else if (family == "garch") {
-    cost <- function(data) {
-      tryCatch(
-        expr = tseries::garch(data, order, trace = FALSE)$n.likeli,
-        error = function(e) 0
-      )
-    }
   }
-
-  # Get dimension of the data.
-  d <- get_d(data_, family)
 
   # Get the number of paramters for the model to calculate the penalty.
   p <- get_p(data_, family, p_response, order, include_mean)
 
   # Assign families as "gaussian" for "lm" and "ar" or "mgaussian" for
   # "mlm" and "var".
-  fastcpd_family <- get_fastcpd_family(family, p_response)
+  fastcpd_family <- get_fastcpd_family(family, order, p_response)
 
   # Estimate the variance / covariance matrix and pre-process the data for
   # mean, variance, meanvariance, ar and var models.
-  sigma_data <- get_sigma_data(data_, family, order, p, p_response)
+  sigma_data <- get_sigma_data(
+    data_, family, order, p, p_response, variance_estimation
+  )
   sigma_ <- sigma_data$sigma
   data_ <- sigma_data$data
 
@@ -359,10 +346,10 @@ fastcpd <- function(  # nolint: cyclomatic complexity
   )
 
   result <- fastcpd_impl(
-    data_, beta, cost_adjustment,  d, segment_count, trim, momentum_coef,
+    data_, beta, cost_adjustment, segment_count, trim, momentum_coef,
     multiple_epochs, fastcpd_family, epsilon, p, order, cost, cost_gradient,
     cost_hessian, cp_only, vanilla_percentage, warm_start, lower, upper,
-    line_search, sigma_, p_response, pruning_coef, r_clock, r_progress
+    line_search, sigma_, p_response, pruning_coef, r_progress
   )
 
   raw_cp_set <- c(result$raw_cp_set)
@@ -373,13 +360,9 @@ fastcpd <- function(  # nolint: cyclomatic complexity
     cp_set <- cp_set + order
   }
 
-  if (vanilla_percentage == 1) {
-    thetas <- data.frame(matrix(NA, 0, 0))
-  } else {
-    thetas <- data.frame(result$thetas)
-    if (ncol(thetas) > 0) {
-      names(thetas) <- paste0("segment ", seq_len(ncol(thetas)))
-    }
+  thetas <- data.frame(result$thetas)
+  if (ncol(thetas) > 0) {
+    names(thetas) <- paste0("segment ", seq_len(ncol(thetas)))
   }
 
   if (is.null(result$cost_values)) {
@@ -402,7 +385,7 @@ fastcpd <- function(  # nolint: cyclomatic complexity
         for (segments_i in seq_len(length(segments) - 1)) {
           segments_start <- segments[segments_i] + 1
           segments_end <- segments[segments_i + 1]
-          residuals[segments_start:segments_end] <- forecast::Arima(
+          residuals[segments_start:segments_end] <- stats::arima(
             c(data[segments_start:segments_end, 1]),
             order = order,
             method = "ML",
@@ -419,18 +402,6 @@ fastcpd <- function(  # nolint: cyclomatic complexity
           residuals[sgmt_index, ] <- as.matrix(
             data[sgmt_index, ] - colMeans(data[sgmt_index, , drop = FALSE])
           )
-        }
-      } else if (family == "garch") {
-        residuals <- matrix(NA, nrow(data))
-        segments <- c(0, cp_set, nrow(data))
-        for (segments_i in seq_len(length(segments) - 1)) {
-          segments_start <- segments[segments_i] + 1
-          segments_end <- segments[segments_i + 1]
-          residuals[segments_start:segments_end] <- tseries::garch(
-            data[segments_start:segments_end, 1],
-            order,
-            trace = FALSE
-          )$residuals
         }
       },
       error = function(e) message("Residual calculation failed.")
@@ -450,3 +421,439 @@ fastcpd <- function(  # nolint: cyclomatic complexity
     cp_only = cp_only
   )
 }
+
+#' @name fastcpd_family
+#' @aliases fastcpd.family
+#' @title Wrapper functions for fastcpd
+#' @description Wrapper functions for fastcpd to find change points in various
+#' models.
+#' @seealso [fastcpd.mean()], [fastcpd.variance()], [fastcpd.mv()],
+#' [fastcpd.meanvariance()] for basic statistics change models;
+#' [fastcpd.lm()], [fastcpd.binomial()], [fastcpd.poisson()],
+#' [fastcpd.lasso()] for regression coefficients change models;
+#' [fastcpd.ar()], [fastcpd.var()], [fastcpd.arima()], [fastcpd.arma()],
+#' [fastcpd.garch()] for change in time series models.
+#'
+#' @md
+#' @keywords internal
+NULL
+
+#' @title Find change points efficiently in AR(\eqn{p}) models
+#' @param data A numeric vector, a matrix, a data frame or a time series object.
+#' @param order A positive integer specifying the order of the AR model.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}. One special argument can be passed here is
+#' \code{include.mean}, which is a logical value indicating whether the
+#' mean should be included in the model. The default value is \code{TRUE}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_ar()] and [fastcpd.ar()] are
+#' wrapper functions of [fastcpd()] to find change points in
+#' AR(\eqn{p}) models. The function is similar to [fastcpd()] except that
+#' the data is by default a one-column matrix or univariate vector
+#' and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_ar_1.R
+#' @example tests/testthat/examples/fastcpd_ar_2.R
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_ar
+#' @export
+fastcpd_ar <- function(data, order = 0, ...) {
+  result <- fastcpd.ts(c(data), "ar", order, ...)
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_ar
+#' @export
+fastcpd.ar <- fastcpd_ar  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in
+#' ARIMA(\eqn{p}, \eqn{d}, \eqn{q}) models
+#' @param data A numeric vector, a matrix, a data frame or a time series object.
+#' @param order A vector of length three specifying the order of the ARIMA
+#' model.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}. One special argument can be passed here is
+#' \code{include.mean}, which is a logical value indicating whether the
+#' mean should be included in the model. The default value is \code{TRUE}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_arima()] and [fastcpd.arima()] are
+#' wrapper functions of [fastcpd()] to find change points in
+#' ARIMA(\eqn{p}, \eqn{d}, \eqn{q}) models.
+#' The function is similar to [fastcpd()]
+#' except that the data is by default a one-column matrix or univariate vector
+#' and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_arima.txt
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_arima
+#' @export
+fastcpd_arima <- function(data, order = 0, ...) {
+  result <- fastcpd.ts(c(data), "arima", order, ...)
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_arima
+#' @export
+fastcpd.arima <- fastcpd_arima  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in ARMA(\eqn{p}, \eqn{q}) models
+#' @param data A numeric vector, a matrix, a data frame or a time series object.
+#' @param order A vector of length two specifying the order of the ARMA
+#' model.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_arma()] and [fastcpd.arma()] are
+#' wrapper functions of [fastcpd()] to find change points in
+#' ARMA(\eqn{p}, \eqn{q}) models. The function is similar to [fastcpd()]
+#' except that the data is by default a one-column matrix or univariate vector
+#' and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_arma.txt
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_arma
+#' @export
+fastcpd_arma <- function(data, order = c(0, 0), ...) {
+  result <- fastcpd.ts(c(data), "arma", order, ...)
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_arma
+#' @export
+fastcpd.arma <- fastcpd_arma  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in logistic regression models
+#' @param data A matrix or a data frame with the response variable as the first
+#' column.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_binomial()] and [fastcpd.binomial()] are
+#' wrapper functions of [fastcpd()] to find change points in
+#' logistic regression models. The function is similar to [fastcpd()]
+#' except that the data is by default a matrix or data frame with the response
+#' variable as the first column and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_binomial.R
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_binomial
+#' @export
+fastcpd_binomial <- function(data, ...) {
+  result <- fastcpd(
+    data = data.frame(y = data[, 1], x = data[, -1]), family = "binomial", ...
+  )
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_binomial
+#' @export
+fastcpd.binomial <- fastcpd_binomial  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in GARCH(\eqn{p}, \eqn{q}) models
+#' @param data A numeric vector, a matrix, a data frame or a time series object.
+#' @param order A positive integer vector of length two specifying the order of
+#' the GARCH model.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_garch()] and [fastcpd.garch()] are
+#' wrapper functions of [fastcpd()] to find change points in
+#' GARCH(\eqn{p}, \eqn{q}) models. The function is similar to [fastcpd()]
+#' except that the data is by default a one-column matrix or univariate vector
+#' and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_garch.txt
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_garch
+#' @export
+fastcpd_garch <- function(data, order = c(0, 0), ...) {
+  result <- fastcpd.ts(c(data), "garch", order, ...)
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_garch
+#' @export
+fastcpd.garch <- fastcpd_garch  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in penalized linear regression models
+#' @param data A matrix or a data frame with the response variable as the first
+#' column.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_lasso()] and [fastcpd.lasso()] are wrapper
+#' functions of [fastcpd()] to find change points in penalized
+#' linear regression models. The function is similar to [fastcpd()]
+#' except that the data is by default a matrix or data frame with the response
+#' variable as the first column and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_lasso.txt
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_lasso
+#' @export
+fastcpd_lasso <- function(data, ...) {
+  result <- fastcpd(
+    data = data.frame(y = data[, 1], x = data[, -1]), family = "lasso", ...
+  )
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_lasso
+#' @export
+fastcpd.lasso <- fastcpd_lasso  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in linear regression models
+#' @param data A matrix or a data frame with the response variable as the first
+#' column.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_lm()] and [fastcpd.lm()] are wrapper
+#' functions of [fastcpd()] to find change points in linear
+#' regression models. The function is similar to [fastcpd()] except that
+#' the data is by default a matrix or data frame with the response variable
+#' as the first column and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_lm_1.R
+#' @example tests/testthat/examples/fastcpd_lm_2.txt
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_lm
+#' @export
+fastcpd_lm <- function(data, ...) {
+  result <- fastcpd(
+    data = data.frame(y = data[, 1], x = data[, -1]), family = "lm", ...
+  )
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_lm
+#' @export
+fastcpd.lm <- fastcpd_lm  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in mean change models
+#' @param data A matrix, a data frame or a vector.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_mean()] and [fastcpd.mean()] are wrapper
+#' functions of [fastcpd()] to find the mean change. The function is
+#' similar to [fastcpd()] except that the data is by default a matrix or
+#' data frame or a vector with each row / element as an observation and thus a
+#' formula is not required here.
+#' @example tests/testthat/examples/fastcpd_mean.R
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_mean
+#' @export
+fastcpd_mean <- function(data, ...) {
+  if (is.null(dim(data)) || length(dim(data)) == 1) {
+    data <- matrix(data, ncol = 1)
+  }
+  result <- fastcpd(
+    formula = ~ . - 1, data = data.frame(x = data), family = "mean", ...
+  )
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_mean
+#' @export
+fastcpd.mean <- fastcpd_mean  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in mean variance change models
+#' @param data A matrix, a data frame or a vector.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_meanvariance()], [fastcpd.meanvariance()],
+#' [fastcpd_mv()], [fastcpd.mv()] are wrapper
+#' functions of [fastcpd()] to find the meanvariance change. The
+#' function is similar to [fastcpd()] except that the data is by
+#' default a matrix or data frame or a vector with each row / element as an
+#' observation and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_meanvariance.R
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_meanvariance
+#' @export
+fastcpd_meanvariance <- function(data, ...) {
+  if (is.null(dim(data)) || length(dim(data)) == 1) {
+    data <- matrix(data, ncol = 1)
+  }
+  result <- fastcpd(
+    formula = ~ . - 1, data = data.frame(x = data), family = "meanvariance", ...
+  )
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_meanvariance
+#' @export
+fastcpd.meanvariance <-  # nolint: Conventional R function style
+  fastcpd_meanvariance
+
+#' @rdname fastcpd_meanvariance
+#' @export
+fastcpd_mv <- fastcpd_meanvariance
+
+#' @rdname fastcpd_meanvariance
+#' @export
+fastcpd.mv <- fastcpd_meanvariance  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in Poisson regression models
+#' @param data A matrix or a data frame with the response variable as the first
+#' column.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_poisson()] and [fastcpd.poisson()] are
+#' wrapper functions of [fastcpd()] to find change points in
+#' Poisson regression models. The function is similar to [fastcpd()]
+#' except that the data is by default a matrix or data frame with the response
+#' variable as the first column and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_poisson.txt
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_poisson
+#' @export
+fastcpd_poisson <- function(data, ...) {
+  result <- fastcpd(
+    data = data.frame(y = data[, 1], x = data[, -1]), family = "poisson", ...
+  )
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_poisson
+#' @export
+fastcpd.poisson <- fastcpd_poisson  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in time series data
+#' @param data A numeric vector, a matrix, a data frame or a time series object.
+#' @param family A character string specifying the family of the time series.
+#' The value should be one of \code{"ar"}, \code{"var"}, \code{"arima"} or
+#' \code{"garch"}.
+#' @param order A positive integer or a vector of length less than four
+#' specifying the order of the time series. Possible combinations with
+#' \code{family} are:
+#' \itemize{
+#' \item \code{"ar"}, NUMERIC(1): AR(\eqn{p}) model using linear regression.
+#' \item \code{"var"}, NUMERIC(1): VAR(\eqn{p}) model using linear regression.
+#' \item \code{"arima"}, NUMERIC(3): ARIMA(\eqn{p}, \eqn{d}, \eqn{q}) model
+#'   using [stats::arima()].
+#' \item \code{"garch"}, NUMERIC(2): GARCH(\eqn{p}, \eqn{q}) model.
+#' }
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}. One special argument can be passed here is
+#' \code{include.mean}, which is a logical value indicating whether the
+#' mean should be included in the model. The default value is \code{TRUE}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_ts()] and [fastcpd.ts()] are wrapper functions for
+#' [fastcpd()] to find change points in time series data. The function is
+#' similar to [fastcpd()] except that the data is a time series and the
+#' family is one of \code{"ar"}, \code{"var"}, \code{"arma"}, \code{"arima"} or
+#' \code{"garch"}.
+#' @example tests/testthat/examples/fastcpd_ts.txt
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_ts
+#' @export
+fastcpd_ts <- function(data, family = NULL, order = c(0, 0, 0), ...) {
+  if (!is.null(family)) {
+    family <- tolower(family)
+  }
+
+  check_family(family, c("ar", "var", "arima", "arma", "garch"))
+  stopifnot(check_order(order, family))
+
+  # TODO(doccstat): Deal with different data types.
+  result <- fastcpd(
+    formula = ~ . - 1,
+    data = data.frame(x = data),
+    family = family,
+    order = order,
+    ...
+  )
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_ts
+#' @export
+fastcpd.ts <- fastcpd_ts  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in VAR(\eqn{p}) models
+#' @param data A matrix, a data frame or a time series object.
+#' @param order A positive integer specifying the order of the VAR model.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_var()] and [fastcpd.var()] are
+#' wrapper functions of [fastcpd_ts()] to find change points in
+#' VAR(\eqn{p}) models. The function is similar to [fastcpd_ts()]
+#' except that the data is by default a matrix with row as an observation
+#' and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_var.R
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_var
+#' @export
+fastcpd_var <- function(data, order = 0, ...) {
+  result <- fastcpd.ts(data, "var", order, ...)
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_var
+#' @export
+fastcpd.var <- fastcpd_var  # nolint: Conventional R function style
+
+#' @title Find change points efficiently in variance change models
+#' @param data A matrix, a data frame or a vector.
+#' @param ... Other arguments passed to [fastcpd()], for example,
+#' \code{segment_count}.
+#' @return A [fastcpd-class] object.
+#' @description [fastcpd_variance()] and [fastcpd.variance()] are wrapper
+#' functions of [fastcpd()] to find the variance change. The
+#' function is similar to [fastcpd()] except that the data is by
+#' default a matrix or data frame or a vector with each row / element as an
+#' observation and thus a formula is not required here.
+#' @example tests/testthat/examples/fastcpd_variance.R
+#' @seealso [fastcpd()]
+#'
+#' @md
+#' @rdname fastcpd_variance
+#' @export
+fastcpd_variance <- function(data, ...) {
+  if (is.null(dim(data)) || length(dim(data)) == 1) {
+    data <- matrix(data, ncol = 1)
+  }
+  result <- fastcpd(
+    formula = ~ . - 1, data = data.frame(x = data), family = "variance", ...
+  )
+  result@call <- match.call()
+  result
+}
+
+#' @rdname fastcpd_variance
+#' @export
+fastcpd.variance <- fastcpd_variance  # nolint: Conventional R function style
