@@ -1,7 +1,6 @@
 # Everything in this script is provided as is. The purpose of this script is to
 # do a sanity check on the C++ implementation of `fastcpd`.
 
-testthat::skip_on_cran()
 testthat::skip_if_not_installed("mvtnorm")
 
 # nolint start: script provided as is
@@ -40,7 +39,7 @@ testthat::test_that("logistic regression", {
     )@cp_set
   )
 
-  testthat::expect_length(warning_messages, 3830)
+  testthat::expect_length(warning_messages, 3831)
 
   testthat::expect_equal(change_points_binomial_fastcpd_vanilla, 125)
 })

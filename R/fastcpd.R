@@ -300,8 +300,57 @@ fastcpd <- function(  # nolint: cyclomatic complexity
     r_progress <- eval.parent(match.call()[["r.progress"]])
   }
 
-  # Define the cost functions for ARIMA model.
-  if (family == "arima") {
+  if (family %in% c("binomial", "poisson", "lasso")) {
+    fastcpd_family <- family
+  } else if (family == "mean") {
+    fastcpd_family <- family
+    vanilla_percentage <- 1
+    p <- ncol(data_)
+  } else if (family == "variance") {
+    fastcpd_family <- family
+    vanilla_percentage <- 1
+    p <- ncol(data_)^2
+  } else if (family == "meanvariance") {
+    fastcpd_family <- family
+    vanilla_percentage <- 1
+    p <- ncol(data_)^2 + ncol(data_)
+  } else if (family == "garch") {
+    p <- sum(order) + 1
+    fastcpd_family <- family
+    vanilla_percentage <- 1
+  } else if (family == "lm" && p_response == 1) {
+    fastcpd_family <- "gaussian"
+  } else if (family == "ar") {
+    p <- order
+    fastcpd_family <- "gaussian"
+    y <- data_[p + seq_len(nrow(data_) - p), ]
+    x <- matrix(NA, nrow(data_) - p, p)
+    for (p_i in seq_len(p)) {
+      x[, p_i] <- data_[(p - p_i) + seq_len(nrow(data_) - p), ]
+    }
+    data_ <- cbind(y, x)
+  } else if (family == "lm" && p_response > 1) {
+    p <- (ncol(data_) - p_response) * p_response
+    fastcpd_family <- "mgaussian"
+    vanilla_percentage <- 1
+  } else if (family == "var") {
+    p <- order * p_response^2
+    fastcpd_family <- "mgaussian"
+    vanilla_percentage <- 1
+    y <- data_[order + seq_len(nrow(data_) - order), ]
+    x <- matrix(NA, nrow(data_) - order, order * ncol(data_))
+    for (p_i in seq_len(order)) {
+      x[, (p_i - 1) * ncol(data_) + seq_len(ncol(data_))] <-
+        data_[(order - p_i) + seq_len(nrow(data_) - order), ]
+    }
+    data_ <- cbind(y, x)
+  } else if (family == "arma" && order[1] == 0) {
+    p <- sum(order) + 1
+    fastcpd_family <- "ma"
+  } else if (family == "arma" && order[1] != 0) {
+    p <- sum(order) + 1
+    fastcpd_family <- family
+  } else if (family == "arima") {
     cost <- function(data) {
       tryCatch(
         expr = -stats::arima(
@@ -310,30 +359,65 @@ fastcpd <- function(  # nolint: cyclomatic complexity
         error = function(e) 0
       )
     }
+    p <- sum(order[-2]) + 1 + include_mean
+    fastcpd_family <- "custom"
+    if (!is.null(cost) && length(formals(cost)) == 1) {
+      vanilla_percentage <- 1
+    }
+  } else {
+    if (!methods::hasArg("p")) {
+      p <- ncol(data_) - 1
+    }
+    fastcpd_family <- "custom"
+    if (!is.null(cost) && length(formals(cost)) == 1) {
+      vanilla_percentage <- 1
+    }
   }
 
-  # Get the number of paramters for the model to calculate the penalty.
-  p <- get_p(data_, family, p_response, order, include_mean)
+  cost_pelt <- NULL
+  cost_sen <- NULL
+  if (length(formals(cost)) == 1) {
+    cost_pelt <- cost
+  } else {
+    cost_sen <- cost
+  }
 
-  # Assign families as "gaussian" for "lm" and "ar" or "mgaussian" for
-  # "mlm" and "var".
-  fastcpd_family <- get_fastcpd_family(family, order, p_response)
+  sigma_ <- if (!is.null(variance_estimation)) {
+    as.matrix(variance_estimation)
+  } else if (family == "mean") {
+    variance.mean(data_)
+  } else if (family == "var" || family == "lm" && p_response > 1) {
+    as.matrix(Matrix::nearPD(variance.lm(data_, p_response))$mat)
+  } else if (family == "lm" || family == "ar") {
+    as.matrix(variance.lm(data_))
+  } else {
+    diag(1)
+  }
 
-  # Estimate the variance / covariance matrix and pre-process the data for
-  # mean, variance, meanvariance, ar and var models.
-  sigma_data <- get_sigma_data(
-    data_, family, order, p, p_response, variance_estimation
-  )
-  sigma_ <- sigma_data$sigma
-  data_ <- sigma_data$data
+  if (rcond(sigma_) < 1e-10) {
+    sigma_ <- diag(1e-10, nrow(sigma_))
+  }
 
-  # Use vanilla PELT for
-  # "mean", "variance", "meanvariance", "arima", "garch", "mgaussian".
-  vanilla_percentage <-
-    get_vanilla_percentage(vanilla_percentage, cost, fastcpd_family)
+  if (is.character(beta)) {
+    if (!(beta %in% c("BIC", "MBIC", "MDL"))) {
+      stop("Invalid beta selection criterion provided.")
+    }
 
-  # Adjust the penalty for "lm".
-  beta <- get_beta(beta, p, nrow(data_), fastcpd_family, sigma_)
+    beta <- switch(
+      beta,
+      BIC = (p + 1) * log(nrow(data_)) / 2,
+      MBIC = (p + 2) * log(nrow(data_)) / 2,
+      MDL = (p + 2) * log2(nrow(data_)) / 2
+    )
+
+    # For linear regression models, an estimate of the variance is needed in the
+    # cost function. The variance estimation is only for "lm" family with no
+    # `beta` provided. Only estimate the variance for Gaussian family when
+    # `beta` is null.
+    if (fastcpd_family == "gaussian") {
+      beta <- beta * c(sigma_)
+    }
+  }
 
   # No pruning for "lasso" and "mgaussian". Adjust the pruning coefficient for
   # "MBIC" and "MDL".
@@ -347,9 +431,9 @@ fastcpd <- function(  # nolint: cyclomatic complexity
 
   result <- fastcpd_impl(
     data_, beta, cost_adjustment, segment_count, trim, momentum_coef,
-    multiple_epochs, fastcpd_family, epsilon, p, order, cost, cost_gradient,
-    cost_hessian, cp_only, vanilla_percentage, warm_start, lower, upper,
-    line_search, sigma_, p_response, pruning_coef, r_progress
+    multiple_epochs, fastcpd_family, epsilon, p, order, cost_pelt, cost_sen,
+    cost_gradient, cost_hessian, cp_only, vanilla_percentage, warm_start,
+    lower, upper, line_search, sigma_, p_response, pruning_coef, r_progress
   )
 
   raw_cp_set <- c(result$raw_cp_set)
@@ -391,17 +475,6 @@ fastcpd <- function(  # nolint: cyclomatic complexity
             method = "ML",
             include.mean = include_mean
           )$residuals
-        }
-      } else if (family %in% c("mean", "variance", "meanvariance")) {
-        residuals <- matrix(NA, nrow(data), ncol(data))
-        segments <- c(0, cp_set, nrow(data))
-        for (segments_i in seq_len(length(segments) - 1)) {
-          segments_start <- segments[segments_i] + 1
-          segments_end <- segments[segments_i + 1]
-          sgmt_index <- segments_start:segments_end
-          residuals[sgmt_index, ] <- as.matrix(
-            data[sgmt_index, ] - colMeans(data[sgmt_index, , drop = FALSE])
-          )
         }
       },
       error = function(e) message("Residual calculation failed.")
@@ -654,7 +727,8 @@ fastcpd.lm <- fastcpd_lm  # nolint: Conventional R function style
 #' similar to [fastcpd()] except that the data is by default a matrix or
 #' data frame or a vector with each row / element as an observation and thus a
 #' formula is not required here.
-#' @example tests/testthat/examples/fastcpd_mean.R
+#' @example tests/testthat/examples/fastcpd_mean_1.R
+#' @example tests/testthat/examples/fastcpd_mean_2.R
 #' @seealso [fastcpd()]
 #'
 #' @md
@@ -686,7 +760,8 @@ fastcpd.mean <- fastcpd_mean  # nolint: Conventional R function style
 #' function is similar to [fastcpd()] except that the data is by
 #' default a matrix or data frame or a vector with each row / element as an
 #' observation and thus a formula is not required here.
-#' @example tests/testthat/examples/fastcpd_meanvariance.R
+#' @example tests/testthat/examples/fastcpd_meanvariance_1.R
+#' @example tests/testthat/examples/fastcpd_meanvariance_2.R
 #' @seealso [fastcpd()]
 #'
 #' @md
@@ -837,7 +912,8 @@ fastcpd.var <- fastcpd_var  # nolint: Conventional R function style
 #' function is similar to [fastcpd()] except that the data is by
 #' default a matrix or data frame or a vector with each row / element as an
 #' observation and thus a formula is not required here.
-#' @example tests/testthat/examples/fastcpd_variance.R
+#' @example tests/testthat/examples/fastcpd_variance_1.R
+#' @example tests/testthat/examples/fastcpd_variance_2.R
 #' @seealso [fastcpd()]
 #'
 #' @md
