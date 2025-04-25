@@ -1435,15 +1435,34 @@ void Fastcpd::GetNllPeltArma(const unsigned int segment_start,
   const mat data_segment = data_.rows(segment_start, segment_end);
   Environment stats = Environment::namespace_env("stats");
   Function arima = stats["arima"];
-  List out =
-      arima(Named("x") = data_segment.col(0),
-            Named("order") = NumericVector::create(order_(0), 0, order_(1)),
-            Named("method") = "ML", Named("include.mean") = false);
-  result_coefficients_ = zeros<colvec>(sum(order_) + 1);
-  result_coefficients_.rows(0, sum(order_) - 1) = as<colvec>(out["coef"]);
-  result_coefficients_(sum(order_)) = as<double>(out["sigma2"]);
-  result_residuals_ = mat(as<colvec>(out["residuals"]));
-  result_value_ = -as<double>(out["loglik"]);
+
+  try {
+    List out =
+        arima(Named("x") = data_segment.col(0),
+              Named("order") = NumericVector::create(order_(0), 0, order_(1)),
+              Named("method") = "ML", Named("include.mean") = false);
+
+    result_coefficients_ = zeros<colvec>(sum(order_) + 1);
+    result_coefficients_.rows(0, sum(order_) - 1) = as<colvec>(out["coef"]);
+    result_coefficients_(sum(order_)) = as<double>(out["sigma2"]);
+    result_residuals_ = mat(as<colvec>(out["residuals"]));
+    result_value_ = -as<double>(out["loglik"]);
+  } catch (const std::exception& e) {
+    // Handle the error - use reasonable defaults
+    Rcpp::warning("ARMA model fitting failed: %s", e.what());
+
+    // Set default coefficients (zeros)
+    result_coefficients_ = zeros<colvec>(sum(order_) + 1);
+
+    // Use a high penalty value to discourage this segment
+    result_value_ = data_segment.n_rows * 10.0;
+
+    // Set residuals as the original data (conservative approach)
+    result_residuals_ = data_segment.col(0);
+
+    // Set a relatively high variance estimate
+    result_coefficients_(sum(order_)) = arma::var(data_segment.col(0));
+  }
 }
 
 void Fastcpd::GetNllPeltCustom(const unsigned int segment_start,
@@ -1588,26 +1607,18 @@ void Fastcpd::GetNllPeltMeanvarianceValue(const unsigned int segment_start,
                                           const unsigned int segment_end,
                                           const bool cv,
                                           const Nullable<colvec>& start) {
-  unsigned int approximate_segment_start = segment_start,
-               approximate_segment_end = segment_end;
-  if (approximate_segment_end - approximate_segment_start + 1 <= data_n_dims_) {
-    if (segment_end < data_n_rows_ - data_n_dims_) {
-      approximate_segment_end = segment_end + data_n_dims_;
-    } else {
-      approximate_segment_end = data_n_rows_ - 1;
-    }
-    approximate_segment_start = approximate_segment_end - data_n_dims_;
-  }
-  const unsigned int segment_length =
-      approximate_segment_end - approximate_segment_start + 1;
-  const rowvec data_diff = data_c_.row(approximate_segment_end + 1) -
-                           data_c_.row(approximate_segment_start);
-  const double det_value =
+  const unsigned int segment_length = segment_end - segment_start + 1;
+  const rowvec data_diff = data_c_.row(segment_end + 1) -
+                           data_c_.row(segment_start);
+  double det_value =
       det((reshape(data_diff.subvec(data_n_dims_, parameters_count_ - 1),
                    data_n_dims_, data_n_dims_) -
            (data_diff.subvec(0, data_n_dims_ - 1)).t() *
                (data_diff.subvec(0, data_n_dims_ - 1)) / segment_length) /
           segment_length);
+  if (det_value <= 0) {
+    det_value = 1e-10;
+  }
   result_value_ = log(det_value) * segment_length / 2.0;
 }
 
